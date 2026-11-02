@@ -1,8 +1,17 @@
 {
+	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"buildCommand": "pnpm build",
-	"outputDirectory": "dist",
+	"outputDirectory": "dist/client",
 	"installCommand": "pnpm install",
-	"framework": "astro",
+	"framework": null,
+	"trailingSlash": true,
+	"redirects": [
+		{
+			"source": "/",
+			"destination": "/blog/",
+			"permanent": false
+		}
+	],
 	"headers": [
 		{
 			"source": "/(.*)",
@@ -26,7 +35,7 @@
 			]
 		},
 		{
-			"source": "/_astro/(.*)",
+			"source": "/blog/_astro/(.*)",
 			"headers": [
 				{
 					"key": "Cache-Control",
@@ -34,6 +43,5 @@
 				}
 			]
 		}
-	],
-	"cleanUrls": true
+	]
 }
