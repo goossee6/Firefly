@@ -151,12 +151,23 @@ check(
 );
 
 check(
-	"Vercel 产物目录指向 dist/client 且启用 CF_WORKERS",
+	"Vercel 产物目录指向 dist/client",
 	() => {
 		const vercel = JSON.parse(read("vercel.json"));
-		return vercel.outputDirectory === "dist/client" && String(vercel.buildCommand).includes("CF_WORKERS=true");
+		return vercel.outputDirectory === "dist/client" && vercel.framework === null;
 	},
-	"vercel.json：outputDirectory 与 buildCommand 任一不符都会 404",
+	"vercel.json：outputDirectory 必须是 dist/client，framework 必须是 null（框架预设会覆盖输出目录）",
+);
+
+check(
+	"Cloudflare 适配器默认启用（不依赖 CF_WORKERS 环境变量）",
+	() => {
+		const cfg = read("astro.config.mjs");
+		// 平台默认构建命令是 `pnpm build`，不会传任何环境变量；
+		// 适配器一旦回到条件加载，Cloudflare 上就没有 dist/client，wrangler deploy 直接失败。
+		return cfg.includes("STATIC_BUILD") && !/process\.env\.CF_WORKERS\s*\?/.test(cfg);
+	},
+	"astro.config.mjs：适配器应为默认启用，仅 STATIC_BUILD=1 时关闭",
 );
 
 check(

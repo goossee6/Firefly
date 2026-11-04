@@ -37,18 +37,24 @@
 
 | 文件 | 内容 |
 |---|---|
-| `astro.config.mjs` | `base: "/blog/"`；`trailingSlash: "always"` |
-| `vercel.json` | `outputDirectory: "dist/client"`、`framework: null`、`trailingSlash: true`、`buildCommand: "CF_WORKERS=true pnpm build"`、`/` → `/blog/` 302、`/blog/game` → `/blog/posts/game/` 301、`/blog/_astro/(.*)` 长缓存 |
+| `astro.config.mjs` | `base: "/blog/"`；`trailingSlash: "always"`；**适配器默认启用**（仅 `STATIC_BUILD=1` 关闭） |
+| `vercel.json` | `outputDirectory: "dist/client"`、`framework: null`、`trailingSlash: true`、`buildCommand: "pnpm build"`、`/` → `/blog/` 302、`/blog/game` → `/blog/posts/game/` 301、`/blog/_astro/(.*)` 长缓存 |
 | `wrangler.jsonc` | `assets.directory: "./dist/client"` |
 | `src/pages/game.astro` | 硬编码 `/blog/posts/game/` |
 
-**为什么本地构建必须先设 `CF_WORKERS=true`**
-上游 `astro.config.mjs` 里适配器是条件加载的（`process.env.CF_WORKERS ? cloudflare() : undefined`）。
-实测 Astro 7.3.2 下：**没有适配器时 `base` 只作用于 URL，不作用于产物目录**（页面落在 `dist/` 根），
-有适配器时才输出到 `dist/client/blog/`。Go 目标是让产物结构与 URL 一致，所以构建必须带 `CF_WORKERS=true`。
+**为什么适配器改成默认启用**
+上游是条件加载（`process.env.CF_WORKERS ? cloudflare() : undefined`）。实测 Astro 7.3.2 下：
+**没有适配器时 `base` 只作用于 URL，不作用于产物目录**（页面落在 `dist/` 根，链接却是 `/blog/...`，全站错位）。
+
+偏偏 Cloudflare Workers Builds 用的是平台默认命令 `pnpm run build`，**不会传任何环境变量**，
+于是适配器没启用 → 没有 `dist/client` → `wrangler deploy` 报
+`The directory specified by the "assets.directory" field ... does not exist`。
+
+所以本站不再依赖 `CF_WORKERS`：适配器默认启用，只有设 `STATIC_BUILD=1` 才构建纯静态产物。
+两个平台都跑同一条 `pnpm build`，不需要在控制台配任何变量。
 
 **升级时怎么核对**
-1. 上游是否仍保留 `CF_WORKERS` 条件适配器；若改名/移除，需同步改 `vercel.json` 的 `buildCommand`
+1. `astro.config.mjs` 的适配器是否仍为默认启用（`pnpm verify` 会断言，退回条件加载会红）
 2. `scripts/site-root.ts` 的 `resolveSiteRoot()` 是否还在（pagefind 依赖它找产物根目录）
 3. `base` 行为是否变化（用 `ls dist/client/blog` 验证一次）
 

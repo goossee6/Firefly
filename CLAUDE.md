@@ -93,6 +93,7 @@ LQIP data is generated into `src/constants/lqips.json` and committed — regener
 ## Deployment
 
 - **Vercel** (default, `vercel.json`)
-- **Cloudflare Workers** (`wrangler.jsonc`, set `CF_WORKERS` env var)
-- Static output to `dist/`
+- **Cloudflare Workers** (`wrangler.jsonc`, assets from `dist/client`)
+- Both platforms run plain `pnpm build` — the Cloudflare adapter is always on (set `STATIC_BUILD=1` for a pure-static build)
+- Static output to `dist/client/` (site lives under `/blog/`)
 

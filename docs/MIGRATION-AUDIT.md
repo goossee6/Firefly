@@ -14,7 +14,7 @@
 | **是否基于最新上游** | ✅ 是。`HEAD` 与 `upstream/master` 的 sha 完全相同（`af8e98fd`），落后 **0** 个提交 |
 | **功能面是否同步完整** | ✅ 18 项定制全部在位，无功能性遗漏 |
 | **类型检查** | ✅ `astro check`：271 文件 / **0 error / 0 warning** / 4 hint |
-| **构建** | ✅ `CF_WORKERS=true pnpm build` exit 0，68 页，根跳转 + 7 别名镜像正常 |
+| **构建** | ✅ `pnpm build` exit 0，68 页，根跳转 + 7 别名镜像正常 |
 | **需你确认** | ⚠️ **4 项**（见第四节），其中 1 项是配置被改回默认值 |
 | **文档需更新** | ⚠️ 1 处：`site_url` 实际值与你改后的不一致 |
 
@@ -179,10 +179,10 @@ upstream/master : af8e98fd  fix(utils): 统一全站日期格式化与归档分�
 git fetch upstream && git rev-parse HEAD upstream/master   # 两个 sha 应相同
 
 # 功能面
-CF_WORKERS=true npx astro check                            # 期望 0 error
+npx astro check                                            # 期望 0 error
 
 # 完整构建 + 产物验收
-CODEBUDDY_SAFE_DELETE_ENABLED=0 CF_WORKERS=true pnpm build
+CODEBUDDY_SAFE_DELETE_ENABLED=0 pnpm build
 ls dist/client/index.html                                  # 根跳转页
 ls -d dist/client/{yuanshen,q,vndb,bangumi,myanimelist,game,target-iscsi-server}
 grep -c Redirecting dist/client/blog/index.html            # 期望 0（首页未被覆盖）

@@ -3,7 +3,7 @@
 	"name": "firefly",
 	"compatibility_date": "2025-06-01",
 	"compatibility_flags": ["nodejs_compat"],
-	// 构建时需设置 CF_WORKERS=true，Astro 会把站点输出到 dist/client（见 scripts/site-root.ts）
+	// 适配器默认启用，`pnpm build` 即输出到 dist/client（见 astro.config.mjs）
 	"assets": {
 		"directory": "./dist/client"
 	}

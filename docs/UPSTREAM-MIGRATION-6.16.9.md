@@ -66,7 +66,7 @@ master             ← 旧版本（6.13.3 + 全部定制），保持不动
 |---|---|---|
 | `astro.config.mjs` | ① `base: "/blog/"` ② 注册 `root-redirect`（实现在 `src/integrations/root-redirect.mjs`）③ `vite.define.__BLOG_VERSION__` ④ 注册 `remarkMark` ⑤ directive 组件表加 `api` | 子路径部署 + 本地 Markdown 扩展 |
 | `package.json` | `build` 链前面加 `fix-frontmatter` + `sync-updated`；补 7 个脚本入口 | 文章工具链；**主体仍是上游原链** |
-| `vercel.json` | `outputDirectory: dist/client`、`framework: null`、`trailingSlash: true`、`buildCommand: CF_WORKERS=true pnpm build`、`/`→`/blog/` 302、`/blog/game` 301、`/blog/_astro` 长缓存 | 修复子路径部署；框架预设会覆盖输出目录 |
+| `vercel.json` | `outputDirectory: dist/client`、`framework: null`、`trailingSlash: true`、`buildCommand: pnpm build`、`/`→`/blog/` 302、`/blog/game` 301、`/blog/_astro` 长缓存 | 修复子路径部署；框架预设会覆盖输出目录 |
 | `wrangler.jsonc` | `assets.directory: ./dist/client`、`compatibility_date: 2025-06-01` | 与适配器产物一致 |
 | `.gitignore` | 加 `.vscode`、`.wrangler/`、`.workbuddy/`、`.reasonix/` | 本地环境产物 |
 | `src/content.config.ts` | 加 `alias`（string \| string[] → 归一化为数组）；`pinned` 改为 `boolean \| number` 并 transform 成数字 | 别名路由与数字置顶 |
@@ -103,18 +103,25 @@ master             ← 旧版本（6.13.3 + 全部定制），保持不动
 
 ### 共同前提
 
-构建必须带 **`CF_WORKERS=true`**。
+两个平台都直接跑 **`pnpm build`**，不需要任何环境变量。
 
 原因：上游适配器是 `process.env.CF_WORKERS ? cloudflare() : undefined`。实测 Astro 7.3.2 下，
 **无适配器时 `base` 只影响 URL 不影响产物目录**（页面落到 `dist/` 根，但链接是 `/blog/...`，必然 404）；
 有适配器时才输出 `dist/client/blog/...`，与 `assets` 目录一致。
+
+而 Cloudflare Workers Builds 用的是平台默认命令 `pnpm run build`，**不会传环境变量**，
+条件加载在那里永远为假 → 没有 `dist/client` → `wrangler deploy` 报
+`The directory specified by the "assets.directory" field ... does not exist`（2026-11-05 实际踩到）。
+
+因此适配器已改为**默认启用**（`astro.config.mjs`），仅 `STATIC_BUILD=1` 时构建纯静态产物。
+`CF_WORKERS` 变量不再需要，两个平台都不用在控制台配置任何东西。
 
 ### Vercel
 
 | 设置项 | 值 |
 |---|---|
 | Framework Preset | **Other**（不能选 Astro，否则输出目录被接管） |
-| Build Command | `CF_WORKERS=true pnpm build`（已写在 `vercel.json`，若面板里有覆盖则以面板为准） |
+| Build Command | `pnpm build`（已写在 `vercel.json`，若面板里有覆盖则以面板为准） |
 | Output Directory | `dist/client` |
 | Install Command | `pnpm install` |
 | Root Directory | 仓库根 |
@@ -126,11 +133,12 @@ master             ← 旧版本（6.13.3 + 全部定制），保持不动
 
 | 设置项 | 值 |
 |---|---|
-| 构建命令 | `CF_WORKERS=true pnpm build` |
+| 构建命令 | `pnpm build`（平台默认值即可，无需自定义） |
+| 部署命令 | `npx wrangler deploy`（读取仓库根的 `wrangler.jsonc`） |
 | 构建输出目录 / assets | `./dist/client`（已写进 `wrangler.jsonc`） |
-| 环境变量 | `CF_WORKERS=true` |
+| 环境变量 | **不需要** |
 
-### 产物结构（`CF_WORKERS=true` 时）
+### 产物结构（适配器启用时）
 
 ```
 dist/
@@ -146,11 +154,11 @@ dist/
 
 ## 五、验证结果
 
-以下为**真实构建**结果（`CODEBUDDY_SAFE_DELETE_ENABLED=0 CF_WORKERS=true pnpm build`，exit 0）：
+以下为**真实构建**结果（`CODEBUDDY_SAFE_DELETE_ENABLED=0 pnpm build`，exit 0）：
 
 | 检查项 | 结果 |
 |---|---|
-| `CF_WORKERS=true npx astro check` | 271 个文件，**0 error** |
+| `npx astro check` | 271 个文件，**0 error** |
 | 完整构建 | **exit 0**，68 个页面，25~36 秒 |
 | 首页 | `dist/client/blog/index.html` 413 KB，`<title>CC 的 Blog - 嘻嘻</title>`，`grep -c Redirecting` = 0 |
 | 根跳转 | `dist/client/index.html` → `url=/blog/` |
@@ -213,6 +221,6 @@ OG 渲染器解不了。**不影响构建与页面渲染**，只是 OG 卡片上
 2. `git fetch upstream`，在新分支上 `git merge upstream/master`
 3. 冲突时**一律先取上游**，再对照 `CUSTOMIZATIONS.md` 补回定制
 4. 特别关注的三个易漏点：
-   - `base: "/blog/"` 与 `CF_WORKERS=true`（产物目录）
+   - `base: "/blog/"` 与**适配器默认启用**（产物目录；退回条件加载会导致 Cloudflare 无 dist/client）
    - pagefind 的 `--output-subdir`（索引要落在 `blog/pagefind`，两个搜索组件才能保持上游原样）
    - `content.config.ts` 的 `alias` 与数字 `pinned`（schema 冲突会直接构建失败）

@@ -63,11 +63,17 @@ if (process.env.NODE_ENV === "development") {
 	setMaxListeners(20);
 }
 
-const adapter = process.env.CF_WORKERS
-	? cloudflare({
-			prerenderEnvironment: "node",
-		})
-	: undefined;
+// 本站固定挂在 /blog/ 子路径下，Vercel 与 Cloudflare Workers 都需要适配器的产物布局
+// （dist/client/blog/...）。纯静态构建时 Astro 的 base 只改 URL、不改输出目录，页面会落在
+// dist/ 根，与所有 /blog/ 开头的链接错位，Cloudflare 的 assets.directory=./dist/client 也会找不到目录。
+// 因此适配器默认启用，不再依赖 CF_WORKERS 环境变量（平台默认的 `pnpm build` 不会传它）。
+// 确实需要纯静态产物（例如本地探测 dist/ 结构）时设 STATIC_BUILD=1。
+const adapter =
+	process.env.STATIC_BUILD === "1"
+		? undefined
+		: cloudflare({
+				prerenderEnvironment: "node",
+			});
 
 // https://astro.build/config
 export default defineConfig({
