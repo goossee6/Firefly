@@ -1701,21 +1701,3 @@ function disableAnimation() {
   });
 </script>
 
-<script>
-let lastTrack = 0;
-function trackPageview() {
-  const now = Date.now();
-  if (now - lastTrack < 2000) return;
-  lastTrack = now;
-  const path = window.location.pathname;
-  const uidEl = document.getElementById("post-uid");
-  const uid = uidEl ? uidEl.dataset.uid : "";
-  fetch("/api/view/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path, uid }),
-  }).catch(() => {});
-}
-// astro:page-load 在首次渲染和 SPA 导航后都会触发，一个事件覆盖所有场景
-document.addEventListener("astro:page-load", () => { setTimeout(trackPageview, 200); });
-</script>

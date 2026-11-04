@@ -144,8 +144,6 @@ const relatedPosts = await getRelatedPosts(entry, 5);
   headings={headings}
   bannerPostMeta={bannerPostMeta}
 >
-	<!-- post uid for stats tracking -->
-	<div id="post-uid" data-uid={entry.data.uid} style="display:none"></div>
 	  
 	  <!-- KaTeX 按需加载 - 仅在文章页面 -->
   <KatexManager slot="head" />

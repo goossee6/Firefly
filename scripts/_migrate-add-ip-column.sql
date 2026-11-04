@@ -1,1 +1,0 @@
-ALTER TABLE pageviews ADD COLUMN ip TEXT;

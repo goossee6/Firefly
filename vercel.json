@@ -10,6 +10,16 @@
 			"source": "/",
 			"destination": "/blog/",
 			"permanent": false
+		},
+		{
+			"source": "/blog/game",
+			"destination": "/blog/posts/game/",
+			"permanent": true
+		},
+		{
+			"source": "/blog/game/",
+			"destination": "/blog/posts/game/",
+			"permanent": true
 		}
 	],
 	"headers": [

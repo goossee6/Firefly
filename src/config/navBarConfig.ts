@@ -87,7 +87,6 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		children: [
 			// 关于页面
 			LinkPresets.About,
-			{ name: "统计", url: "/stats/", icon: "material-symbols:bar-chart" },
 
 			// 友链
 			LinkPresets.Friends,

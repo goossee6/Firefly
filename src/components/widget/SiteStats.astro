@@ -138,25 +138,6 @@ const stats = [
         </div>
       </div>
     ))}
-    <div class="flex items-center justify-between px-3 py-1.5 hidden" id="stat-row-total-pv">
-      <div class="flex items-center gap-2.5">
-        <div class="text-(--primary) text-xl">
-          <Icon is:inline name="material-symbols:visibility-outline" />
-        </div>
-        <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">访问总量</span>
-      </div>
-      <div class="flex items-center">
-        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-stat-id="total-pv"></span>
-      </div>
-    </div>
-    <div class="flex items-center gap-2.5 px-3 py-1.5 hidden" id="stat-row-total-uv">
-      <div class="text-(--primary) text-xl">
-        <Icon is:inline name="material-symbols:person-outline" />
-      </div>
-      <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">你是本站第</span>
-      <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-stat-id="total-uv"></span>
-      <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">位访客</span>
-    </div>
   </div>
 </WidgetLayout>
 
@@ -200,41 +181,15 @@ const stats = [
     }
   }
 
-  async function fetchPageViews() {
-    try {
-      const res = await fetch("/api/view/");
-      if (res.ok) {
-        const data = await res.json();
-        document.querySelectorAll("#stat-row-total-pv").forEach((row) => {
-          const el = row.querySelector('[data-stat-id="total-pv"]');
-          if (data.total > 0 && el) {
-            el.textContent = data.total.toLocaleString();
-            row.classList.remove("hidden");
-          }
-        });
-        document.querySelectorAll("#stat-row-total-uv").forEach((row) => {
-          const el = row.querySelector('[data-stat-id="total-uv"]');
-          if (data.uv > 0 && el) {
-            el.textContent = data.uv.toLocaleString();
-            row.classList.remove("hidden");
-          }
-        });
-      }
-    } catch {}
-  }
-
   // 页面加载时更新
   updateDynamicStats();
-  fetchPageViews();
 
   // 页面切换时重新更新
   document.addEventListener("swup:contentReplaced", () => {
     setTimeout(updateDynamicStats, 100);
-    setTimeout(fetchPageViews, 200);
   });
 
   document.addEventListener("astro:page-load", () => {
     setTimeout(updateDynamicStats, 100);
-    setTimeout(fetchPageViews, 200);
   });
 </script>

@@ -133,24 +133,6 @@ const path = customPath || (id ? `/posts/${id}` : "");
      )
    }
 
-  <!-- 阅读量统计（首页不显示） -->
-  {
-    !isHome && id && (
-      <div class="flex items-center" id="view-count-row" style="display:none">
-        <div class="meta-icon">
-          <Icon is:inline
-            name="material-symbols:visibility-outline-rounded"
-            class="text-xl"
-          />
-        </div>
-        <span class="text-50 text-sm font-medium mr-1">
-          浏览量
-        </span>
-        <span class="text-50 text-sm font-medium" id="view-count-display"></span>
-      </div>
-    )
-  }
-
   <!-- Twikoo访问量统计（首页不显示，且文章访问量统计启用时显示） -->
   {
     !isHome &&
@@ -209,27 +191,4 @@ const path = customPath || (id ? `/posts/${id}` : "");
     }
 </div>
 
-<script>
-  function loadViewCount() {
-    const row = document.getElementById("view-count-row");
-    const display = document.getElementById("view-count-display");
-    if (!row || !display) return;
-    row.style.display = "none";
-    const uidEl = document.getElementById("post-uid");
-    const uid = uidEl ? uidEl.dataset.uid : "";
-    if (!uid) return;
-    fetch("/api/view/?uid=" + encodeURIComponent(uid))
-      .then(r => r.json())
-      .then(data => {
-        const count = data.count ?? 0;
-        if (count > 0) {
-          display.textContent = count.toLocaleString();
-          row.style.display = "";
-        }
-      })
-      .catch(() => {});
-  }
-  loadViewCount();
-  document.addEventListener("astro:page-load", loadViewCount);
-</script>
 

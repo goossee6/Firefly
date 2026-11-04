@@ -4,18 +4,5 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"assets": {
 		"directory": "./dist/client"
-	},
-	"kv_namespaces": [
-		{
-			"binding": "SESSION",
-			"id": "7775ef4842f942e8be635fee7f81fd7c"
-		}
-	],
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "blog-stats",
-			"database_id": "90078a66-18ae-48a4-8047-3a7a53ff465b"
-		}
-	]
+	}
 }
