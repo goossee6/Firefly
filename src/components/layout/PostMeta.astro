@@ -3,7 +3,7 @@ import { Icon } from "astro-icon/components";
 import { commentConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
-import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { formatDateToYYYYMMDD, formatRelativeTime } from "@/utils/date-utils";
 import { getCategoryUrl, getTagUrl } from "@/utils/url-utils";
 
 export interface Props {
@@ -22,7 +22,7 @@ export interface Props {
 	maxTags?: number;
 	showNoTags?: boolean;
 	customPath?: string;
-	pinned?: boolean;
+	pinned?: boolean | number;
 	password?: boolean;
 	words?: number;
 	minutes?: number;
@@ -108,8 +108,14 @@ const visibleTags =
               class="text-xl"
             />
           </div>
-          <span class="text-50 text-sm font-medium">
-            {formatDateToYYYYMMDD(updated)}
+          <span class="text-50 text-sm font-medium whitespace-nowrap">
+            {i18n(I18nKey.updatedAt)}
+          </span>
+          <span
+            class="text-50 text-sm font-medium"
+            title={formatDateToYYYYMMDD(updated)}
+          >
+            {formatRelativeTime(updated)}
           </span>
         </div>
       )

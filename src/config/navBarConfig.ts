@@ -50,12 +50,38 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		],
 	});
 
+	// 工具及其子菜单（本地定制：/tools/ 下的自建小工具）
+	links.push({
+		name: "工具",
+		url: "/tools/",
+		icon: "material-symbols:build",
+		children: [
+			{
+				name: "全部小工具",
+				url: "/tools/",
+				icon: "material-symbols:apps",
+			},
+			{
+				name: "SteamID 转换",
+				url: "/tools/steamid/",
+				icon: "fa7-brands:steam",
+			},
+		],
+	});
+
 	// 我的及其子菜单
 	links.push({
 		name: "我的",
 		url: "#",
 		icon: "material-symbols:person",
 		children: [
+			// 游戏（本地定制：/game/ 跳转到文章页）
+			{
+				name: "游戏",
+				url: "/game/",
+				icon: "material-symbols:stadia-controller",
+			},
+
 			// 动态
 			LinkPresets.Dynamic,
 
@@ -105,15 +131,15 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		children: [
 			{
 				name: "GitHub",
-				url: "https://github.com/CuteLeaf/Firefly",
+				url: "https://github.com/goossee6/Firefly",
 				external: true,
 				icon: "fa7-brands:github",
 			},
 			{
-				name: "Gitee",
-				url: "https://gitee.com/CuteLeaf/Firefly",
+				name: "Firefly 主题",
+				url: "https://github.com/CuteLeaf/Firefly",
 				external: true,
-				icon: "fa7-brands:gitee",
+				icon: "fa7-brands:github",
 			},
 			{
 				name: "Firefly文档",

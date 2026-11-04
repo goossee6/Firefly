@@ -1,0 +1,75 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+
+const urlParam = Astro.url.searchParams.get("url");
+const targetUrl = urlParam ? decodeURIComponent(urlParam) : null;
+
+let domain = "";
+let isSafe = true;
+const BLOCKED_DOMAINS = ["example.com"];
+
+if (targetUrl) {
+	try {
+		const parsed = new URL(targetUrl);
+		domain = parsed.hostname;
+		isSafe = !BLOCKED_DOMAINS.some((d) => domain.includes(d));
+	} catch {
+		domain = "未知地址";
+		isSafe = false;
+	}
+}
+---
+
+<MainGridLayout title="跳转提示">
+  {
+    !targetUrl ? (
+      <div class="card-base p-8 max-w-md mx-auto mt-24 text-center">
+        <div class="w-12 h-12 rounded-xl bg-(--primary)/10 flex items-center justify-center mx-auto mb-4">
+          <Icon is:inline name="material-symbols:link-off" class="text-2xl text-(--primary)" />
+        </div>
+        <h2 class="text-lg font-bold mb-2">缺少跳转地址</h2>
+        <p class="text-sm text-50">请通过 ?url= 参数传入目标链接</p>
+      </div>
+    ) : (
+      <div class="card-base p-8 max-w-lg mx-auto mt-24">
+        <div class="text-center mb-6">
+          <div class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+            class:list={[isSafe ? "bg-(--primary)/10" : "bg-red-500/10"]}>
+            <Icon is:inline name={isSafe ? "material-symbols:exit-to-app" : "material-symbols:warning-outline-rounded"}
+              class="text-3xl" class:list={[isSafe ? "text-(--primary)" : "text-red-500"]} />
+          </div>
+          <h2 class="text-xl font-bold mb-2">
+            {isSafe
+              ? "即将跳转到外部链接"
+              : "⚠️ 注意：目标地址可能存在风险"}
+          </h2>
+          <p class="text-sm text-50 mb-1">你正在离开本站，前往以下地址：</p>
+          <div class="mt-3 px-4 py-3 rounded-lg bg-(--btn-plain-bg) break-all text-sm font-mono">
+            {targetUrl}
+          </div>
+          <p class="text-xs text-50 mt-2">
+            目标域名：<span class="font-semibold">{domain}</span>
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <a href={targetUrl} rel="noopener noreferrer"
+            class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-(--primary)
+              text-white dark:text-black/70 font-medium hover:bg-(--primary)/80 active:scale-95 transition-all no-underline">
+            <Icon is:inline name="material-symbols:open-in-new" class="text-lg" />
+            继续访问
+          </a>
+          <button onclick="history.back()"
+            class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl
+              bg-(--btn-plain-bg) hover:bg-(--btn-plain-bg-hover) active:scale-95 transition-all cursor-pointer">
+            <Icon is:inline name="material-symbols:arrow-back" class="text-lg" />
+            返回上页
+          </button>
+        </div>
+      </div>
+    )
+  }
+</MainGridLayout>

@@ -47,6 +47,7 @@ export interface BannerVisibilityState {
 	bannerCarouselSwitchable: boolean;
 	bannerCarouselInterval: number;
 	bannerCarouselEffect: string;
+	bannerCarouselTransitionDuration: number;
 	hasMultipleImages: boolean;
 	configQuality: number;
 	mobileQuality: number;
@@ -173,6 +174,8 @@ export function getBannerVisibilityState(
 	);
 	const bannerCarouselEffect =
 		backgroundWallpaper.common?.carousel?.transitionEffect ?? "fade";
+	const bannerCarouselTransitionDuration =
+		backgroundWallpaper.common?.carousel?.transitionDuration ?? 1000;
 	const hasMultipleImages =
 		backgroundImages.desktop.length > 1 || backgroundImages.mobile.length > 1;
 
@@ -208,6 +211,7 @@ export function getBannerVisibilityState(
 		bannerCarouselSwitchable,
 		bannerCarouselInterval,
 		bannerCarouselEffect,
+		bannerCarouselTransitionDuration,
 		hasMultipleImages,
 		configQuality,
 		mobileQuality,

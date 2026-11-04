@@ -41,6 +41,7 @@ export type BackgroundWallpaperConfig = {
 			enable: boolean; // 是否启用壁纸轮播
 			interval?: number; // 轮播间隔时间，单位毫秒
 			transitionEffect?: "fade" | "zoom" | "slide" | "kenburns"; // 过渡效果: 'fade' 渐变 | 'zoom' 缩放 | 'slide' 滑动 | 'kenburns' 旋转木马
+			transitionDuration?: number; // 过渡动画时长，单位毫秒（默认 1000）
 		};
 		// 水波纹动画效果配置，横幅壁纸和全屏壁纸共享，开启会影响页面性能
 		waves?: {

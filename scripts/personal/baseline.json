@@ -1,0 +1,37 @@
+{
+	"recordedAt": "2026-11-04",
+	"targets": {
+		"src/config/siteConfig.ts": {
+			"upstreamSha": "0aa2d02ecbc836b1dec43d8945f41e70f5f0c8b0",
+			"ref": "upstream/master"
+		},
+		"src/config/profileConfig.ts": {
+			"upstreamSha": "4249fbd342d12ba4c827af3afd26d6b17f6b212a",
+			"ref": "upstream/master"
+		},
+		"src/config/navBarConfig.ts": {
+			"upstreamSha": "79ab3746d7525016b880978622c9d919dec7f0af",
+			"ref": "upstream/master"
+		},
+		"src/config/analyticsConfig.ts": {
+			"upstreamSha": "0a449830aa97bc1df62e0263c823d01dd1c9063e",
+			"ref": "upstream/master"
+		},
+		"src/config/commentConfig.ts": {
+			"upstreamSha": "c95dff000ce512d59d7998b75713017559403478",
+			"ref": "upstream/master"
+		},
+		"src/config/sponsorConfig.ts": {
+			"upstreamSha": "022084cd21a3b7191d245c6418ee53b1d91438ae",
+			"ref": "upstream/master"
+		},
+		"src/config/pioConfig.ts": {
+			"upstreamSha": "80f72e38c1cb098ac49c64b77cfdeca1af778873",
+			"ref": "upstream/master"
+		},
+		"src/config/FooterConfig.html": {
+			"upstreamSha": "b70a10c405993ad07413c3db68f79b7ce06b7d60",
+			"ref": "upstream/master"
+		}
+	}
+}

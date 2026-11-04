@@ -184,3 +184,24 @@ export function formatDateTimeToYYYYMMDDHHmm(dateInput: Date | string): string {
 
 	return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
 }
+
+/**
+ * 相对时间：今天 / 昨天 / N天前 / N个月前 / N年前
+ * 用于文章更新时间，鼠标悬停时通过 title 展示完整日期
+ */
+export function formatRelativeTime(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	if (diffMs < 0) return "刚刚";
+
+	const diffDays = Math.floor(diffMs / 86400000);
+	if (diffDays === 0) return "今天";
+	if (diffDays === 1) return "昨天";
+	if (diffDays < 30) return `${diffDays}天前`;
+
+	const diffMonths = Math.floor(diffDays / 30);
+	if (diffMonths < 12) return `${diffMonths}个月前`;
+
+	const diffYears = Math.floor(diffDays / 365);
+	return `${diffYears}年前`;
+}

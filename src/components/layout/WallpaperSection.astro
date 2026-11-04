@@ -32,7 +32,7 @@ const wallpaperPosition = state.isFullscreenMode
     {state.hasMultipleImages ? (
     /* 轮播模式：渲染所有图片为 slide-item */
     <div class:list={["relative h-full w-full bg-(--page-bg)", `effect-${state.bannerCarouselEffect}`]} id="banner-images-container"
-         style={`z-index: 5; --carousel-interval: ${state.bannerCarouselInterval}ms`}
+         style={`z-index: 5; --carousel-interval: ${state.bannerCarouselInterval}ms; --carousel-transition-duration: ${state.bannerCarouselTransitionDuration}ms`}
          data-carousel-enabled={state.bannerCarouselEnabledDefault}
          data-carousel-switchable={state.bannerCarouselSwitchable}
          data-carousel-interval={state.bannerCarouselInterval}

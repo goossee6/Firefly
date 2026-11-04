@@ -38,6 +38,7 @@ import {
 } from "./src/config";
 import I18nKey from "./src/i18n/i18nKey";
 import { i18n } from "./src/i18n/translation";
+import { rootRedirect } from "./src/integrations/root-redirect.mjs";
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
 import { rehypeDiagramPanZoom } from "./src/plugins/rehype-diagram-panzoom.mjs";
 import rehypeEmailProtection from "./src/plugins/rehype-email-protection.mjs";
@@ -54,6 +55,9 @@ import { remarkPlantuml } from "./src/plugins/remark-plantuml.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import { remarkWikiLink } from "./src/plugins/remark-wiki-link.js";
 import { collectUsedFontCssVars } from "./src/utils/fontHelper";
+import pkg from "./package.json";
+import { ApiButtonComponent } from "./src/plugins/rehype-component-api-button.mjs";
+import remarkMark from "./src/plugins/remark-mark.mjs";
 
 if (process.env.NODE_ENV === "development") {
 	setMaxListeners(20);
@@ -69,7 +73,7 @@ const adapter = process.env.CF_WORKERS
 export default defineConfig({
 	site: siteConfig.site_url,
 
-	base: "/",
+	base: "/blog/",
 	trailingSlash: "always",
 
 	// 字体配置 - 只加载实际使用的字体，跳过未引用的以加快构建
@@ -117,6 +121,8 @@ export default defineConfig({
 	},
 
 	integrations: [
+		// 根路径重定向 + 文章别名镜像（实现见 src/integrations/root-redirect.mjs）
+		rootRedirect({ title: siteConfig.title }),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector
@@ -296,6 +302,7 @@ export default defineConfig({
 				remarkImageGrid,
 				remarkExcerpt,
 				remarkDirective,
+				remarkMark,
 				remarkSectionize,
 				parseDirectiveNode,
 				remarkMermaid,
@@ -321,6 +328,7 @@ export default defineConfig({
 					{
 						components: {
 							github: GithubCardComponent,
+							api: ApiButtonComponent,
 						},
 					},
 				],
@@ -351,6 +359,9 @@ export default defineConfig({
 		}),
 	},
 	vite: {
+		define: {
+			__BLOG_VERSION__: JSON.stringify(pkg.version),
+		},
 		plugins: [tailwindcss()],
 		server: {
 			watch: {

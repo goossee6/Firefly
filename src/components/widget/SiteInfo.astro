@@ -1,5 +1,4 @@
 ---
-import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Icon } from "astro-icon/components";
 import ci from "ci-info";
@@ -23,13 +22,11 @@ const showTitle = widgetConfig?.showTitle !== false;
 
 // ---- 构建时收集版本和环境信息 ----
 
-// 博客版本（从 package.json 读取）
+// 博客版本（构建时由 vite define 注入，避免运行时读文件系统）
+declare var __BLOG_VERSION__: string;
 let blogVersion = "unknown";
 try {
-	const pkg = JSON.parse(
-		readFileSync(new URL("../../../package.json", import.meta.url), "utf-8"),
-	);
-	blogVersion = pkg.version || "Firefly unknown";
+	blogVersion = __BLOG_VERSION__ || "Firefly unknown";
 } catch {}
 
 // Astro 版本（从已安装的 astro 包读取）
