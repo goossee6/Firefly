@@ -8,7 +8,7 @@
 
 | # | 功能 | 涉及文件 | 上游是否已有 |
 |---|---|---|---|
-| 1 | 站点挂载在 `/blog/` 子路径 | `astro.config.mjs`、`vercel.json`、`wrangler.jsonc`、`scripts/game.astro` | ❌ 无 |
+| 1 | 站点挂载在 `/blog/` 子路径（`SITE_BASE` 可切换） | `astro.config.mjs`、`vercel.json`、`wrangler.jsonc`、`src/pages/game.astro` | ❌ 无 |
 | 2 | 根路径跳转 + 文章别名镜像 | `src/integrations/root-redirect.mjs` | ❌ 无 |
 | 3 | 版本号构建时注入 | `astro.config.mjs`、`SiteInfo.astro` | ❌ 上游用 `fs` 读取 |
 | 4 | 文章别名 301 | `src/pages/[...alias].astro`、`content.config.ts` 的 `alias` | ❌ 无 |
@@ -26,6 +26,8 @@
 | 16 | 统计页「最后活动」按自然日计算 | `SiteStats.astro` | ⚠️ 上游直接减毫秒 |
 | 17 | 面包屑/卡片封面组件 `PostCover` | `src/components/misc/PostCover.astro` | ⚠️ 已保留但**未接入** |
 | 18 | 个人配置（站点名/头像/导航/统计/评论/页脚） | 见 §9 | — |
+| 19 | 四平台部署（Workers / Pages / Vercel / GitHub Pages） | `scripts/build-platform.ts`、`.github/workflows/deploy.yml`、`docs/MULTI-PLATFORM.md` | ❌ 无 |
+| 20 | `site_url` 支持 `SITE_URL` 覆盖 | `src/config/siteConfig.ts` | ❌ 上游写死 |
 
 ---
 
@@ -37,10 +39,26 @@
 
 | 文件 | 内容 |
 |---|---|
-| `astro.config.mjs` | `base: "/blog/"`；`trailingSlash: "always"`；**适配器默认启用**（仅 `STATIC_BUILD=1` 关闭） |
+| `astro.config.mjs` | `base` 取自 `SITE_BASE`（默认 `/blog/`）；`site` 取自 `SITE_URL`（默认主站）；`trailingSlash: "always"`；**适配器默认启用**（仅 `STATIC_BUILD=1` 关闭） |
 | `vercel.json` | `outputDirectory: "dist/client"`、`framework: null`、`trailingSlash: true`、`buildCommand: "pnpm build"`、`/` → `/blog/` 302、`/blog/game` → `/blog/posts/game/` 301、`/blog/_astro/(.*)` 长缓存 |
 | `wrangler.jsonc` | `assets.directory: "./dist/client"` |
-| `src/pages/game.astro` | 硬编码 `/blog/posts/game/` |
+| `src/pages/game.astro` | 目标用 `import.meta.env.BASE_URL` 拼接，不写死 `/blog/` |
+| `src/config/siteConfig.ts` | `site_url` 可用 `SITE_URL` 覆盖 |
+
+**三处环境变量**（多平台部署用，默认值与现有线上一致）
+
+| 变量 | 默认 | 说明 |
+|---|---|---|
+| `SITE_BASE` | `/blog/` | Astro 的 `base` |
+| `SITE_URL` | `https://blog.cn3.top/blog/` | canonical / sitemap / RSS / OG 的绝对域名 |
+| `STATIC_BUILD` | 未设置 | `1` 时关闭适配器，产出纯静态 `dist`（GitHub Pages 用） |
+
+四个平台的完整配置见 **`docs/MULTI-PLATFORM.md`**。构建入口：
+
+```bash
+pnpm build                          # 主站形态（/blog/ + 适配器 → dist/client）
+pnpm build:platform github-pages    # GitHub Pages（/Firefly/ + 纯静态 → dist）
+```
 
 **为什么适配器改成默认启用**
 上游是条件加载（`process.env.CF_WORKERS ? cloudflare() : undefined`）。实测 Astro 7.3.2 下：

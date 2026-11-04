@@ -6,6 +6,15 @@ import { resolveSiteLang } from "../utils/site-config-utils";
 // 语言代码，例如：'zh_CN', 'zh_TW', 'en', 'ja', 'ru', 'ko'。
 const SITE_LANG = resolveSiteLang("zh_CN");
 
+// 绝对站点地址。多平台部署时用 SITE_URL 覆盖（canonical / sitemap / RSS / OG 都取这个值），
+// 未设置时回落到主站，本地开发与现有部署行为不变。
+const SITE_URL = (() => {
+	const raw =
+		(typeof process !== "undefined" && process.env.SITE_URL) ||
+		"https://blog.cn3.top/blog/";
+	return raw.endsWith("/") ? raw : `${raw}/`;
+})();
+
 // 页面开关配置 - 控制特定页面的访问权限，设为false会返回404并自动隐藏对应的导航栏菜单项
 const pages = resolvePageToggles({
 	// ── 社交 (Social) ──────────────────────────────────
@@ -48,7 +57,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "嘻嘻",
 
 	// 站点 URL
-	site_url: "https://blog.cn3.top/blog/",
+	site_url: SITE_URL,
 
 	// 站点描述
 	description:

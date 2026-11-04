@@ -55,11 +55,22 @@ function section(title) {
 
 // ── 从 astro.config 读出 base，后面所有产物路径都基于它推导 ────────────────
 const configSource = exists("astro.config.mjs") ? read("astro.config.mjs") : "";
-const baseMatch = configSource.match(/\bbase:\s*["']([^"']*)["']/);
-const baseSegment = baseMatch ? baseMatch[1].replace(/^\/+|\/+$/g, "") : "";
+// base 现在来自 SITE_BASE 环境变量（默认值写在 astro.config.mjs 里），不再是字面量
+const baseSegment = (() => {
+	if (process.env.SITE_BASE) return process.env.SITE_BASE.replace(/^\/+|\/+$/g, "");
+	const envDefault = configSource.match(
+		/process\.env\.SITE_BASE\s*\|\|\s*["']([^"']*)["']/,
+	);
+	if (envDefault) return envDefault[1].replace(/^\/+|\/+$/g, "");
+	const literal = configSource.match(/\bbase:\s*["']([^"']*)["']/);
+	return literal ? literal[1].replace(/^\/+|\/+$/g, "") : "";
+})();
+
+const staticBuild = process.env.STATIC_BUILD === "1";
 
 const siteRoot = exists("dist/client") ? "dist/client" : "dist";
-const siteDir = baseSegment ? join(siteRoot, baseSegment) : siteRoot;
+// 适配器构建把站点放进 <root>/<base>；纯静态构建直接放在 <root>
+const siteDir = !staticBuild && baseSegment ? join(siteRoot, baseSegment) : siteRoot;
 
 console.log(`${BOLD}定制项自检${RESET} ${DIM}(base=${baseSegment ? `/${baseSegment}/` : "/"})${RESET}`);
 
@@ -69,7 +80,7 @@ section("源码");
 check(
 	"astro.config 声明 base 子路径",
 	() => baseSegment.length > 0,
-	`astro.config.mjs 里找不到 base: "/blog/"，站点会部署到根路径`,
+	`astro.config.mjs 的 base 解析为空（SITE_BASE 未生效），站点会部署到根路径`,
 );
 
 check(
@@ -258,32 +269,40 @@ if (SOURCE_ONLY) {
 		"首页被写成了跳转页 —— root-redirect 的路径计算又错了",
 	);
 
-	check(
-		`根跳转页指向 /${baseSegment}/`,
-		() => read(`${siteRoot}/index.html`).includes(`url=/${baseSegment}/`),
-		"根路径访问不会跳到博客首页",
-	);
+	// 纯静态构建（GitHub Pages）时产物根就是站点根，根跳转页与别名镜像都不该生成
+	if (!staticBuild) {
+		check(
+			`根跳转页指向 /${baseSegment}/`,
+			() => read(`${siteRoot}/index.html`).includes(`url=/${baseSegment}/`),
+			"根路径访问不会跳到博客首页",
+		);
+
+		check(
+			"别名页已镜像到产物根",
+			() => {
+				const aliases = readdirSync(join(ROOT, siteDir), { withFileTypes: true })
+					.filter((entry) => entry.isDirectory() && entry.name !== baseSegment)
+					.filter((entry) => {
+						const idx = join(ROOT, siteDir, entry.name, "index.html");
+						return existsSync(idx) && readFileSync(idx, "utf-8").includes("Redirecting");
+					})
+					.map((entry) => entry.name);
+				if (aliases.length === 0) return false;
+				return aliases.every((name) => existsSync(join(ROOT, siteRoot, name, "index.html")));
+			},
+			"根路径的 /yuanshen/ 这类别名地址会 404",
+		);
+	}
 
 	check(
-		"别名页已镜像到产物根",
-		() => {
-			const aliases = readdirSync(join(ROOT, siteDir), { withFileTypes: true })
-				.filter((entry) => entry.isDirectory() && entry.name !== baseSegment)
-				.filter((entry) => {
-					const idx = join(ROOT, siteDir, entry.name, "index.html");
-					return existsSync(idx) && readFileSync(idx, "utf-8").includes("Redirecting");
-				})
-				.map((entry) => entry.name);
-			if (aliases.length === 0) return false;
-			return aliases.every((name) => existsSync(join(ROOT, siteRoot, name, "index.html")));
-		},
-		"根路径的 /yuanshen/ 这类别名地址会 404",
-	);
-
-	check(
-		"pagefind 索引位于 base 子目录",
-		() => exists(`${siteDir}/pagefind/pagefind.js`) && !exists(`${siteRoot}/pagefind/pagefind.js`),
-		`索引应在 ${siteDir}/pagefind，且旧位置不应残留`,
+		staticBuild ? "pagefind 索引位于产物根（纯静态构建）" : "pagefind 索引位于 base 子目录",
+		() =>
+			staticBuild
+				? exists(`${siteRoot}/pagefind/pagefind.js`)
+				: exists(`${siteDir}/pagefind/pagefind.js`) && !exists(`${siteRoot}/pagefind/pagefind.js`),
+		staticBuild
+			? `索引应在 ${siteRoot}/pagefind（页面就在产物根，不能再加 base 层）`
+			: `索引应在 ${siteDir}/pagefind，且旧位置不应残留`,
 	);
 
 	check(

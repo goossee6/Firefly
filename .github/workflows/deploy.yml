@@ -16,6 +16,12 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+# GitHub Pages 是项目站点，挂在 /<repo>/ 下，且不能跑 Cloudflare 适配器。
+# 仓库改名或换自定义域名时，只需要改这里（以及自定义域名场景把 SITE_BASE 改成 /）。
+env:
+  SITE_BASE: /Firefly/
+  SITE_URL: https://goossee6.github.io/Firefly/
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,16 +43,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
       
-      - name: Build site
-        run: pnpm run build
+      - name: Build site (static, base = ${{ env.SITE_BASE }})
+        run: pnpm run build:platform github-pages
 
-      - name: Create .nojekyll file
-        run: touch dist/.nojekyll
-      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: dist  # Astro默认构建输出目录
+          path: dist  # 纯静态产物（构建脚本已写入 .nojekyll）
           include-hidden-files: true  # Keep .nojekyll (excluded by default since v4)
 
   deploy:

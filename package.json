@@ -15,6 +15,7 @@
     "restore:personal": "node scripts/restore-personal-config.mjs",
     "snapshot:personal": "node scripts/restore-personal-config.mjs --record",
     "build": "npx tsx scripts/fix-frontmatter.ts && npx tsx scripts/sync-updated.ts && npx tsx scripts/generate-github-card-data.ts && npx tsx scripts/generate-lqips.ts && npx tsx scripts/generate-vndb-covers.ts && astro build --force && npx tsx scripts/prune-pio-assets.ts && npx tsx scripts/subset-fonts.ts && npx tsx scripts/minify-inline-scripts.ts && npx tsx scripts/run-pagefind.ts",
+    "build:platform": "npx tsx scripts/build-platform.ts",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",

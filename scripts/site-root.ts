@@ -13,15 +13,31 @@ export function resolveSiteRoot(): string {
 /**
  * Astro 的 base 配置（形如 "/blog/"）。
  *
- * 这里直接从 astro.config.mjs 的源码里取字面量，而不是 import 它 —— 配置文件依赖
- * Astro 的 ESM 解析和一堆插件，脚本内部 require 会连带拉起整套构建环境。
- * 配置里只有一个 `base: "..."` 字面量，正则取第一个即可。
+ * 优先取构建时的 SITE_BASE 环境变量（与 astro.config.mjs 同一来源），
+ * 否则从配置源码里读默认值 —— 不 import 配置文件是因为它会连带拉起整套构建环境。
  */
 export function resolveBasePath(): string {
+	const normalize = (value: string) => {
+		const raw = (value || "/").trim();
+		const withLeading = raw.startsWith("/") ? raw : `/${raw}`;
+		const withTrailing = withLeading.endsWith("/")
+			? withLeading
+			: `${withLeading}/`;
+		return withTrailing.replace(/\/{2,}/g, "/");
+	};
+
+	if (process.env.SITE_BASE) return normalize(process.env.SITE_BASE);
+
 	try {
 		const source = readFileSync("astro.config.mjs", "utf-8");
-		const matched = source.match(/\bbase:\s*["']([^"']*)["']/);
-		if (matched) return matched[1] || "/";
+		// astro.config.mjs 里的 `process.env.SITE_BASE || "<默认值>"`
+		const envDefault = source.match(
+			/process\.env\.SITE_BASE\s*\|\|\s*["']([^"']*)["']/,
+		);
+		if (envDefault) return normalize(envDefault[1]);
+		// 兼容直接写字面量的写法
+		const literal = source.match(/\bbase:\s*["']([^"']*)["']/);
+		if (literal) return normalize(literal[1]);
 	} catch {
 		// 配置文件不存在时按根路径处理
 	}

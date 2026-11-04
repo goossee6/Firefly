@@ -63,11 +63,24 @@ if (process.env.NODE_ENV === "development") {
 	setMaxListeners(20);
 }
 
-// 本站固定挂在 /blog/ 子路径下，Vercel 与 Cloudflare Workers 都需要适配器的产物布局
-// （dist/client/blog/...）。纯静态构建时 Astro 的 base 只改 URL、不改输出目录，页面会落在
-// dist/ 根，与所有 /blog/ 开头的链接错位，Cloudflare 的 assets.directory=./dist/client 也会找不到目录。
-// 因此适配器默认启用，不再依赖 CF_WORKERS 环境变量（平台默认的 `pnpm build` 不会传它）。
-// 确实需要纯静态产物（例如本地探测 dist/ 结构）时设 STATIC_BUILD=1。
+// ── 多平台部署的两个变量 ───────────────────────────────────────────────
+// SITE_BASE  站点挂载路径。默认主站的 /blog/；GitHub Pages 项目站点用 /Firefly/，自定义域名根路径用 /。
+// SITE_URL   绝对站点地址，决定 canonical / sitemap / RSS / OG 图里的域名。
+// 适配器默认启用（dist/client 布局，Vercel 与 Cloudflare Workers 都靠它）；GitHub Pages 这类
+// 不能跑适配器的平台用 STATIC_BUILD=1 出纯静态产物（dist）。
+const normalizeBase = (value) => {
+	const raw = String(value || "").trim();
+	const withLeading = raw.startsWith("/") ? raw : `/${raw}`;
+	const withTrailing = withLeading.endsWith("/") ? withLeading : `${withLeading}/`;
+	return withTrailing.replace(/\/{2,}/g, "/");
+};
+
+const siteBase = normalizeBase(process.env.SITE_BASE || "/blog/");
+const siteUrl = (() => {
+	const raw = (process.env.SITE_URL || siteConfig.site_url || "").trim();
+	return raw.endsWith("/") ? raw : `${raw}/`;
+})();
+
 const adapter =
 	process.env.STATIC_BUILD === "1"
 		? undefined
@@ -77,9 +90,9 @@ const adapter =
 
 // https://astro.build/config
 export default defineConfig({
-	site: siteConfig.site_url,
+	site: siteUrl,
 
-	base: "/blog/",
+	base: siteBase,
 	trailingSlash: "always",
 
 	// 字体配置 - 只加载实际使用的字体，跳过未引用的以加快构建
