@@ -1,0 +1,319 @@
+---
+// SteamID 转换工具 - 独立工具页
+// 路由：/tools/steamid
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+const title = "SteamID 格式互转工具";
+---
+
+<MainGridLayout title={title}>
+  <main class="tool-container">
+    <h1>🆔 SteamID 转换工具</h1>
+    <p class="sub">支持三种格式互转，所有计算在本地完成，不发送任何数据</p>
+
+    <div class="input-wrap">
+      <label for="steamInput">输入任意一种 SteamID</label>
+      <div class="input-group">
+        <input
+          type="text"
+          id="steamInput"
+          placeholder="例如：STEAM_0:1:123456 或 [U:1:246913] 或 76561197960287930"
+        />
+        <button id="convertBtn">转换</button>
+      </div>
+    </div>
+
+    <div class="result-wrap" id="resultBox" style="display: none;">
+      <h3>转换结果</h3>
+      <div class="result-item">
+        <span class="label">STEAM ID</span>
+        <code id="steamTextId"></code>
+        <button class="copy-btn" data-target="steamTextId">复制</button>
+      </div>
+      <div class="result-item">
+        <span class="label">Steam3 ID</span>
+        <code id="steam3Id"></code>
+        <button class="copy-btn" data-target="steam3Id">复制</button>
+      </div>
+      <div class="result-item">
+        <span class="label">Steam64 ID</span>
+        <code id="steam64Id"></code>
+        <button class="copy-btn" data-target="steam64Id">复制</button>
+      </div>
+      <div class="result-item">
+        <span class="label">个人主页</span>
+        <a id="profileLink" target="_blank" rel="noopener"></a>
+        <button class="copy-btn" data-target="profileLink">复制链接</button>
+      </div>
+    </div>
+
+    <div class="error-tip" id="errorBox" style="display: none;"></div>
+
+  </main>
+
+  <style is:global>
+    .tool-container {
+      max-width: 820px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 3rem;
+    }
+    .sub {
+      color: var(--content-meta);
+      margin-bottom: 1.8rem;
+    }
+    .input-wrap {
+      margin: 1.8rem 0;
+    }
+    .input-wrap label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    #steamInput {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      color: var(--text);
+      min-width: 200px;
+    }
+    #steamInput:focus {
+      border-color: var(--primary);
+      outline: 2px solid color-mix(in srgb, var(--primary) 30%, transparent);
+      outline-offset: -1px;
+    }
+    #convertBtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.8rem;
+      border-radius: 0.5rem;
+      background: var(--primary);
+      color: white;
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      line-height: 1.25rem;
+    }
+    #convertBtn:hover {
+      background: color-mix(in srgb, var(--primary) 80%, transparent);
+      scale: 1.05;
+    }
+    #convertBtn:active {
+      scale: 0.95;
+    }
+    :root[class~="dark"] #convertBtn {
+      color: rgb(0 0 0 / 0.7);
+    }
+    .result-wrap {
+      border: 1px solid var(--border);
+      padding: 1.2rem 1.5rem;
+      border-radius: 8px;
+      background: var(--card-bg);
+      margin-top: 1.5rem;
+    }
+    .result-wrap h3 {
+      margin-top: 0;
+      margin-bottom: 0.8rem;
+    }
+    .result-item {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    .label {
+      min-width: 100px;
+      font-weight: 600;
+      color: var(--content-meta);
+      font-size: 0.9rem;
+    }
+    code {
+      background: var(--code-bg, var(--btn-regular-bg));
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+      color: var(--text);
+    }
+    a#profileLink {
+      color: var(--primary);
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 0.9rem;
+    }
+    a#profileLink:hover {
+      text-decoration: underline;
+    }
+    .copy-btn {
+      padding: 0.15rem 0.8rem;
+      background: var(--btn-regular-bg);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background 0.2s;
+      color: var(--btn-content);
+      white-space: nowrap;
+    }
+    .copy-btn:hover {
+      background: var(--btn-regular-bg-hover);
+    }
+    .copy-btn:active {
+      background: var(--btn-regular-bg-active);
+    }
+    .error-tip {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      background: color-mix(in srgb, var(--primary) 10%, transparent);
+      color: var(--primary);
+      border-radius: 6px;
+      border-left: 4px solid var(--primary);
+    }
+    .ref-details {
+      margin-top: 2.5rem;
+      padding: 0.8rem 1.2rem;
+      background: var(--btn-regular-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .ref-details summary {
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ref-details ul {
+      padding-left: 1.5rem;
+      line-height: 1.7;
+      margin: 0.5rem 0 0;
+    }
+    .ref-details code {
+      background: var(--card-bg);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+  </style>
+</MainGridLayout>
+
+<script>
+  const STEAM64_USER_BASE = BigInt('76561197960265728');
+
+  const inputEl = document.getElementById('steamInput') as HTMLInputElement;
+  const convertBtn = document.getElementById('convertBtn') as HTMLButtonElement;
+  const resultBox = document.getElementById('resultBox') as HTMLElement;
+  const errorBox = document.getElementById('errorBox') as HTMLElement;
+
+  const out = {
+    steamTextId: document.getElementById('steamTextId') as HTMLElement,
+    steam3Id: document.getElementById('steam3Id') as HTMLElement,
+    steam64Id: document.getElementById('steam64Id') as HTMLElement,
+    profileLink: document.getElementById('profileLink') as HTMLAnchorElement,
+  };
+
+  // 复制功能
+  document.querySelectorAll<HTMLElement>('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.dataset.target || '';
+      let text = targetId === 'profileLink' ? out.profileLink.href : document.getElementById(targetId)?.textContent || '';
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => btn.textContent = '复制', 1500);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => btn.textContent = '复制', 1500);
+      }
+    });
+  });
+
+  convertBtn.addEventListener('click', doConvert);
+  inputEl.addEventListener('keydown', e => e.key === 'Enter' && doConvert());
+
+  function showError(msg: string) {
+    errorBox.textContent = msg;
+    errorBox.style.display = 'block';
+    resultBox.style.display = 'none';
+  }
+  function clearError() { errorBox.style.display = 'none'; }
+
+  function doConvert() {
+    clearError();
+    const raw = inputEl.value.trim();
+    if (!raw) return showError('⚠️ 请输入 SteamID');
+
+    let steamX: number, steamY: number, steamZ: bigint;
+
+    // 1. STEAM_X:Y:Z
+    const m1 = raw.match(/^STEAM_(\d+):([01]):(\d+)$/i);
+    if (m1) {
+      steamX = parseInt(m1[1], 10);
+      steamY = parseInt(m1[2], 10);
+      steamZ = BigInt(m1[3]);
+      calcFromXYZ(steamX, steamY, steamZ);
+      return;
+    }
+
+    // 2. [U:1:W]
+    const m2 = raw.match(/^\[U:1:(\d+)\]$/i);
+    if (m2) {
+      const W = BigInt(m2[1]);
+      steamY = Number(W % 2n);
+      steamZ = W / 2n;
+      steamX = 1;
+      calcFromXYZ(steamX, steamY, steamZ);
+      return;
+    }
+
+    // 3. Steam64 数字
+    if (/^\d{17,18}$/.test(raw)) {
+      const steam64 = BigInt(raw);
+      const W = steam64 - STEAM64_USER_BASE;
+      if (W < 0) return showError('❌ 无效 Steam64 ID');
+      steamY = Number(W % 2n);
+      steamZ = W / 2n;
+      steamX = 1;
+      calcFromXYZ(steamX, steamY, steamZ);
+      return;
+    }
+
+    showError('❌ 无法识别格式，请检查输入');
+  }
+
+  function calcFromXYZ(x: number, y: number, z: bigint) {
+    const W = z * 2n + BigInt(y);
+    const steam64 = STEAM64_USER_BASE + W;
+    const steamText = `STEAM_${x}:${y}:${z}`;
+    const steam3 = `[U:1:${W}]`;
+    const s64Str = steam64.toString();
+    const url = `https://steamcommunity.com/profiles/${s64Str}`;
+
+    out.steamTextId.textContent = steamText;
+    out.steam3Id.textContent = steam3;
+    out.steam64Id.textContent = s64Str;
+    out.profileLink.textContent = url;
+    out.profileLink.href = url;
+
+    resultBox.style.display = 'block';
+  }
+</script>

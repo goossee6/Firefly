@@ -8,13 +8,16 @@ import sharp from "sharp";
 const SRC_DIR = "src";
 const PUBLIC_DIR = "public";
 const OUTPUT_FILE = "src/constants/lqips.json";
-// 需要忽略的目录（相对于项目根目录）
+// 需要忽略的路径（相对于项目根目录）
 const IGNORE_DIRS = [
 	"public/favicon/**",
 	"public/pio/**",
 	"public/assets/images/effects/**",
 	"public/assets/music/**",
 	"public/vndb-covers/**",
+	// AVIF image sequence（文件头 ftypavis），sharp 无法解码；
+	// 该头像只在页面上直接引用，不需要 LQIP，跳过避免每次构建都报错
+	"public/assets/images/doro01.avif",
 ];
 
 interface RgbColor {

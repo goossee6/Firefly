@@ -13,7 +13,8 @@ type PostData = {
 	tags: string[];
 	category: string | null;
 	lang: string;
-	pinned: boolean;
+	/** 置顶权重：true 等价 100，数字越大越靠前 */
+	pinned: number;
 	author: string;
 	sourceLink: string;
 	licenseName: string;
@@ -23,6 +24,8 @@ type PostData = {
 	passwordHint: string;
 	series: string;
 	seriesOrder?: number;
+	/** 文章别名：可用多个旧地址 301 跳转到正文（见 src/pages/[...alias].astro） */
+	alias: string[];
 	prevTitle: string;
 	prevSlug: string;
 	nextTitle: string;
@@ -71,7 +74,11 @@ const postsCollection: ContentCollection<PostData> = defineCollection({
 		tags: z.array(z.string()).optional().default([]),
 		category: z.string().optional().nullable().default(""),
 		lang: z.string().optional().default(""),
-		pinned: z.boolean().optional().default(false),
+		pinned: z
+			.union([z.boolean(), z.number()])
+			.optional()
+			.default(false)
+			.transform((v) => (v === true ? 100 : typeof v === "number" ? v : 0)),
 		author: z.string().optional().default(""),
 		sourceLink: z.string().optional().default(""),
 		licenseName: z.string().optional().default(""),
@@ -81,6 +88,12 @@ const postsCollection: ContentCollection<PostData> = defineCollection({
 		passwordHint: z.string().optional().default(""),
 		series: z.string().optional().default(""),
 		seriesOrder: z.number().optional(),
+		// 文章别名，字符串或字符串数组，统一归一化为数组
+		alias: z
+			.union([z.string(), z.array(z.string())])
+			.optional()
+			.default([])
+			.transform((v) => (Array.isArray(v) ? v : v ? [v] : [])),
 
 		/* For internal use */
 		prevTitle: z.string().default(""),

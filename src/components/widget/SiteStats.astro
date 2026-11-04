@@ -158,7 +158,10 @@ const stats = [
     // 更新最后活动时间
     if (lastPostDate) {
       const lastPost = new Date(lastPostDate);
-      const timeSinceLastPost = Math.abs(today.getTime() - lastPost.getTime());
+      // 统一按「日」比较，避免 UTC 与本地时区差导致多算/少算一天
+      const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const lastPostDateOnly = new Date(lastPost.getFullYear(), lastPost.getMonth(), lastPost.getDate());
+      const timeSinceLastPost = Math.abs(todayDate.getTime() - lastPostDateOnly.getTime());
       const daysSinceLastUpdate = Math.floor(timeSinceLastPost / (1000 * 60 * 60 * 24));
 
       const lastUpdateElements = document.querySelectorAll('[data-stat-id="last-update"]');

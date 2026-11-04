@@ -1,0 +1,7 @@
+---
+// /game/ → 文章页的跳转。
+// 用 prerender = true 让它在纯静态构建下也能产出（Cloudflare / Vercel / 本地都能跑）；
+// 产物是带 meta refresh 的跳转页，Vercel 侧另有 vercel.json 的真实 301 规则。
+export const prerender = true;
+return Astro.redirect("/blog/posts/game/", 301);
+---

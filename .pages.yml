@@ -1,0 +1,39 @@
+media:
+  input: public
+  output: /
+content:
+  - name: posts
+    label: Posts
+    type: collection
+    path: src/content/posts
+    view:
+      fields: [ title, published, category, draft ]
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: published, label: Published Date, type: date, required: true }
+      - { name: updated, label: Updated Date, type: date }
+      - { name: draft, label: Draft, type: boolean }
+      - { name: description, label: Description, type: string }
+      - { name: image, label: Cover Image, type: string }
+      - { name: tags, label: Tags, type: string, list: true }
+      - { name: category, label: Category, type: string }
+      - { name: lang, label: Language, type: string }
+      - { name: pinned, label: Pinned (数字越大越靠前), type: number }
+      - { name: author, label: Author, type: string }
+      - { name: uid, label: UID, type: string, hidden: true }
+      - { name: comment, label: Enable Comments, type: boolean }
+      - { name: password, label: Password, type: string }
+      - { name: passwordHint, label: Password Hint, type: string }
+      - { name: sourceLink, label: Source Link, type: string }
+      - { name: licenseName, label: License Name, type: string }
+      - { name: licenseUrl, label: License URL, type: string }
+      - { name: alias, label: Aliases, type: string, list: true }
+      - { name: body, label: Body, type: rich-text }
+  - name: about
+    label: About page
+    type: file
+    path: src/pages/about.md
+    fields:
+      - { name: layout, type: string, hidden: true, default: "../layouts/AboutLayout.astro" }
+      - { name: title, label: Title, type: string }
+      - { name: body, label: Body, type: rich-text, options: { input: public/assets, output: /assets } }

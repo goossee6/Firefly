@@ -1,0 +1,23 @@
+---
+import { getSortedPosts } from "@/utils/content-utils";
+import { getPostUrlBySlug, removeFileExtension } from "@/utils/url-utils";
+
+export async function getStaticPaths() {
+	const posts = await getSortedPosts();
+	return posts
+		.filter((p) => p.data.alias && p.data.alias.length > 0)
+		.flatMap((p) => {
+			const slug = removeFileExtension(p.id);
+			const aliases = p.data.alias as string[];
+			return aliases.map((alias) => ({
+				params: { alias },
+				props: {
+					redirectUrl: getPostUrlBySlug(slug),
+				},
+			}));
+		});
+}
+
+const { redirectUrl } = Astro.props;
+return Astro.redirect(encodeURI(redirectUrl), 301);
+---

@@ -10,9 +10,8 @@ async function getRawSortedPosts() {
 	});
 
 	const sorted = allBlogPosts.sort((a, b) => {
-		// 首先按置顶状态排序，置顶文章在前
-		if (a.data.pinned && !b.data.pinned) return -1;
-		if (!a.data.pinned && b.data.pinned) return 1;
+		// 先按置顶权重降序（数字越大越靠前），权重相同再按发布日期
+		if (a.data.pinned !== b.data.pinned) return b.data.pinned - a.data.pinned;
 
 		// 如果置顶状态相同，则按发布日期排序
 		const dateA = new Date(a.data.published);

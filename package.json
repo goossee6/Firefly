@@ -10,7 +10,11 @@
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",
-    "build": "npx tsx scripts/generate-github-card-data.ts && npx tsx scripts/generate-lqips.ts && npx tsx scripts/generate-vndb-covers.ts && astro build --force && npx tsx scripts/prune-pio-assets.ts && npx tsx scripts/subset-fonts.ts && npx tsx scripts/minify-inline-scripts.ts && npx tsx scripts/run-pagefind.ts",
+    "verify": "node scripts/verify-customizations.mjs",
+    "verify:source": "node scripts/verify-customizations.mjs --source",
+    "restore:personal": "node scripts/restore-personal-config.mjs",
+    "snapshot:personal": "node scripts/restore-personal-config.mjs --record",
+    "build": "npx tsx scripts/fix-frontmatter.ts && npx tsx scripts/sync-updated.ts && npx tsx scripts/generate-github-card-data.ts && npx tsx scripts/generate-lqips.ts && npx tsx scripts/generate-vndb-covers.ts && astro build --force && npx tsx scripts/prune-pio-assets.ts && npx tsx scripts/subset-fonts.ts && npx tsx scripts/minify-inline-scripts.ts && npx tsx scripts/run-pagefind.ts",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
@@ -21,7 +25,14 @@
     "lint": "biome check --write ./src ./scripts",
     "preinstall": "npx only-allow pnpm",
     "lqips": "npx tsx scripts/generate-lqips.ts",
-    "github-cards": "npx tsx scripts/generate-github-card-data.ts"
+    "github-cards": "npx tsx scripts/generate-github-card-data.ts",
+    "fix-frontmatter": "npx tsx scripts/fix-frontmatter.ts",
+    "check-frontmatter": "npx tsx scripts/check-frontmatter.ts",
+    "sync-updated": "npx tsx scripts/sync-updated.ts",
+    "sync-updated:record": "npx tsx scripts/sync-updated.ts --record",
+    "find-orphan-images": "npx tsx scripts/find-orphan-images.ts",
+    "clean-orphan-images": "npx tsx scripts/find-orphan-images.ts --delete",
+    "build:local": "npx tsx scripts/build-local.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
