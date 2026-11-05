@@ -1,0 +1,32 @@
+{
+	"$comment": "多源延迟监测配置。把每个平台的实际地址填进 url；留空或 enabled=false 的会被跳过。",
+	"timeoutMs": 25000,
+	"rounds": 2,
+	"sources": [
+		{
+			"name": "cf-workers",
+			"label": "Cloudflare Workers",
+			"url": "https://blog.cn3.top/",
+			"enabled": true,
+			"families": [4, 6]
+		},
+		{
+			"name": "github-pages",
+			"label": "GitHub Pages",
+			"url": "https://goossee6.github.io/Firefly/",
+			"enabled": true
+		},
+		{
+			"name": "cf-pages",
+			"label": "Cloudflare Pages",
+			"url": "",
+			"enabled": false
+		},
+		{
+			"name": "vercel",
+			"label": "Vercel",
+			"url": "",
+			"enabled": false
+		}
+	]
+}

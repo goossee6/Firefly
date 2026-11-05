@@ -33,7 +33,9 @@
     "sync-updated:record": "npx tsx scripts/sync-updated.ts --record",
     "find-orphan-images": "npx tsx scripts/find-orphan-images.ts",
     "clean-orphan-images": "npx tsx scripts/find-orphan-images.ts --delete",
-    "build:local": "npx tsx scripts/build-local.ts"
+    "build:local": "npx tsx scripts/build-local.ts",
+    "monitor": "node scripts/monitor-sources.mjs",
+    "monitor:report": "node scripts/monitor-sources.mjs --report"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

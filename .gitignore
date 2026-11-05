@@ -58,3 +58,6 @@ package/
 .workbuddy/
 .reasonix/
 reasonix.toml
+
+# 多源延迟监测记录
+.monitor/
