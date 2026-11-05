@@ -1,6 +1,7 @@
 // 本地构建脚本：临时禁用字体 → 构建 → 恢复字体
-import fs from "fs";
+
 import { execSync } from "child_process";
+import fs from "fs";
 
 const CONFIG = "src/config/fontConfig.ts";
 

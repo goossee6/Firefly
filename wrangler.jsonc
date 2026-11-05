@@ -5,6 +5,8 @@
 	"compatibility_flags": ["nodejs_compat"],
 	// 适配器默认启用，`pnpm build` 即输出到 dist/client（见 astro.config.mjs）
 	"assets": {
-		"directory": "./dist/client"
+		"directory": "./dist/client",
+		// 未知路径返回站点自己的 404 页（dist/client/404.html），而不是 0 字节的空 404
+		"not_found_handling": "404-page"
 	}
 }

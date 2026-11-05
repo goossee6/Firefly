@@ -72,7 +72,10 @@ const visibleTags =
   ]}
 >
   {
-    pinned && (
+    /* pinned 现在是数字权重（0 表示不置顶），必须转成布尔再判断：
+       直接写 `pinned && (...)` 时 pinned=0 会让表达式返回 0 本身，
+       Astro 会把那个 0 当文本渲染到卡片元信息里（列表每张卡都多个 0）。 */
+    Boolean(pinned) && (
       <div class="pinned-btn flex items-center gap-1 bg-(--btn-regular-bg) text-(--btn-content) rounded-md px-2 py-1.5 font-bold">
         <Icon name="material-symbols:pinboard" class="text-xl" />
         <span class="text-sm">{i18n(I18nKey.pinned)}</span>

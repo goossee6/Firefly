@@ -35,9 +35,14 @@ const TARGETS = [
 ];
 
 const REFS = ["upstream/master", "origin/master", "HEAD"];
-const MODE = process.argv.includes("--record") ? "record" : process.argv.includes("--check") ? "check" : "restore";
+const MODE = process.argv.includes("--record")
+	? "record"
+	: process.argv.includes("--check")
+		? "check"
+		: "restore";
 
-const snapshotPath = (target) => join(SNAPSHOT_DIR, `${basename(target)}.snapshot`);
+const snapshotPath = (target) =>
+	join(SNAPSHOT_DIR, `${basename(target)}.snapshot`);
 
 /** 比较时忽略行尾差异：Windows 工作区是 CRLF、git 存储按 .gitattributes 归一化成 LF */
 const normalizeEol = (text) => text.replace(/\r\n/g, "\n");
@@ -51,7 +56,10 @@ const RESET = "\x1b[0m";
 /** 取某个 ref 下文件的 blob sha，用来判断上游是否动过这个文件 */
 function upstreamBlobSha(target) {
 	for (const ref of REFS) {
-		const result = spawnSync("git", ["rev-parse", `${ref}:${target}`], { cwd: ROOT, encoding: "utf-8" });
+		const result = spawnSync("git", ["rev-parse", `${ref}:${target}`], {
+			cwd: ROOT,
+			encoding: "utf-8",
+		});
 		if (result.status === 0) return { ref, sha: result.stdout.trim() };
 	}
 	return null;
@@ -69,7 +77,10 @@ function readBaseline() {
 // ── record：从工作区当前内容生成快照 ────────────────────────────────────────
 if (MODE === "record") {
 	mkdirSync(join(ROOT, SNAPSHOT_DIR), { recursive: true });
-	const baseline = { recordedAt: new Date().toISOString().slice(0, 10), targets: {} };
+	const baseline = {
+		recordedAt: new Date().toISOString().slice(0, 10),
+		targets: {},
+	};
 
 	for (const target of TARGETS) {
 		const source = join(ROOT, target);
@@ -77,13 +88,26 @@ if (MODE === "record") {
 			console.log(`${YELLOW}!${RESET} ${target} ${DIM}不存在，跳过${RESET}`);
 			continue;
 		}
-		writeFileSync(join(ROOT, snapshotPath(target)), readFileSync(source, "utf-8"), "utf-8");
+		writeFileSync(
+			join(ROOT, snapshotPath(target)),
+			readFileSync(source, "utf-8"),
+			"utf-8",
+		);
 		const upstream = upstreamBlobSha(target);
-		baseline.targets[target] = { upstreamSha: upstream?.sha ?? null, ref: upstream?.ref ?? null };
-		console.log(`${GREEN}✓${RESET} ${target} ${DIM}→ ${snapshotPath(target)}${RESET}`);
+		baseline.targets[target] = {
+			upstreamSha: upstream?.sha ?? null,
+			ref: upstream?.ref ?? null,
+		};
+		console.log(
+			`${GREEN}✓${RESET} ${target} ${DIM}→ ${snapshotPath(target)}${RESET}`,
+		);
 	}
 
-	writeFileSync(join(ROOT, BASELINE_FILE), `${JSON.stringify(baseline, null, "\t")}\n`, "utf-8");
+	writeFileSync(
+		join(ROOT, BASELINE_FILE),
+		`${JSON.stringify(baseline, null, "\t")}\n`,
+		"utf-8",
+	);
 	console.log(`\n快照已更新（${Object.keys(baseline.targets).length} 个文件）`);
 	process.exit(0);
 }
@@ -104,13 +128,16 @@ for (const target of TARGETS) {
 
 	const snapshotContent = readFileSync(snap, "utf-8");
 	const currentPath = join(ROOT, target);
-	const currentContent = existsSync(currentPath) ? readFileSync(currentPath, "utf-8") : null;
+	const currentContent = existsSync(currentPath)
+		? readFileSync(currentPath, "utf-8")
+		: null;
 
 	if (normalizeEol(currentContent ?? "") === normalizeEol(snapshotContent)) {
 		unchanged.push(target);
 	} else {
 		restored.push(target);
-		if (MODE === "restore") writeFileSync(currentPath, snapshotContent, "utf-8");
+		if (MODE === "restore")
+			writeFileSync(currentPath, snapshotContent, "utf-8");
 	}
 
 	const recordedSha = baseline.targets?.[target]?.upstreamSha;
@@ -126,18 +153,26 @@ if (restored.length) {
 	console.log(`${GREEN}${verb}：${restored.length} 个${RESET}`);
 	for (const target of restored) console.log(`  ${GREEN}•${RESET} ${target}`);
 }
-if (unchanged.length) console.log(`${DIM}未变化：${unchanged.length} 个${RESET}`);
+if (unchanged.length)
+	console.log(`${DIM}未变化：${unchanged.length} 个${RESET}`);
 
 if (upstreamChanged.length) {
-	console.log(`\n${YELLOW}上游改动过这些文件，恢复后请复查是否缺了新字段：${RESET}`);
+	console.log(
+		`\n${YELLOW}上游改动过这些文件，恢复后请复查是否缺了新字段：${RESET}`,
+	);
 	for (const { target, ref } of upstreamChanged) {
-		console.log(`  ${YELLOW}!${RESET} ${target} ${DIM}(对比：git diff ${ref} -- ${target})${RESET}`);
+		console.log(
+			`  ${YELLOW}!${RESET} ${target} ${DIM}(对比：git diff ${ref} -- ${target})${RESET}`,
+		);
 	}
 }
 
 if (missing.length) {
 	console.log(`\n${RED}缺少快照，请先跑一次 --record：${RESET}`);
-	for (const target of missing) console.log(`  ${RED}•${RESET} ${target} ${DIM}(期望 ${snapshotPath(target)})${RESET}`);
+	for (const target of missing)
+		console.log(
+			`  ${RED}•${RESET} ${target} ${DIM}(期望 ${snapshotPath(target)})${RESET}`,
+		);
 }
 
 if (MODE === "check" && restored.length > 0) process.exit(1);

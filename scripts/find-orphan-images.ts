@@ -1,5 +1,5 @@
-import { glob } from "glob";
 import fs from "fs/promises";
+import { glob } from "glob";
 import path from "path";
 import readline from "readline";
 
@@ -87,7 +87,7 @@ async function main() {
 	}
 
 	console.log("\n---");
-	console.log(`To delete them, run: pnpm find-orphan-images --delete`);
+	console.log("To delete them, run: pnpm find-orphan-images --delete");
 
 	// 4. 可选：删除（需确认）
 	if (process.argv.includes("--delete")) {

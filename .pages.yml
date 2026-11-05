@@ -7,7 +7,7 @@ content:
     type: collection
     path: src/content/posts
     view:
-      fields: [ title, published, category, draft ]
+      fields: [title, published, category, draft]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: published, label: Published Date, type: date, required: true }
@@ -34,6 +34,16 @@ content:
     type: file
     path: src/pages/about.md
     fields:
-      - { name: layout, type: string, hidden: true, default: "../layouts/AboutLayout.astro" }
+      - {
+          name: layout,
+          type: string,
+          hidden: true,
+          default: "../layouts/AboutLayout.astro",
+        }
       - { name: title, label: Title, type: string }
-      - { name: body, label: Body, type: rich-text, options: { input: public/assets, output: /assets } }
+      - {
+          name: body,
+          label: Body,
+          type: rich-text,
+          options: { input: public/assets, output: /assets },
+        }

@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 # Pages 部署需要的权限
@@ -33,29 +33,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '22'
-          
+          node-version: "22"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
           version: 11.22.0
           run_install: false
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-      
+
       - name: Build site (static, base = ${{ env.SITE_BASE }})
         run: pnpm run build:platform github-pages
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: dist  # 纯静态产物（构建脚本已写入 .nojekyll）
-          include-hidden-files: true  # Keep .nojekyll (excluded by default since v4)
+          path: dist # 纯静态产物（构建脚本已写入 .nojekyll）
+          include-hidden-files: true # Keep .nojekyll (excluded by default since v4)
 
   deploy:
     environment:

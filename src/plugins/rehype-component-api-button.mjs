@@ -44,8 +44,8 @@ export function ApiButtonComponent(properties, children) {
 		`(function(){var b=document.getElementById('${id}-btn'),c=document.getElementById('${id}'),u=${JSON.stringify(apiUrl)};` +
 		`b.addEventListener('click',function(){b.disabled=true;b.textContent='获取中...';` +
 		`fetch(u,{headers:{'Accept':'application/json'}}).then(async function(k){` +
-		`var l=await k.text(),m;try{m=JSON.parse(l)}catch(e){}` +
-		`var n=m&&(m.url||m.data&&m.data.url);` +
+		"var l=await k.text(),m;try{m=JSON.parse(l)}catch(e){}" +
+		"var n=m&&(m.url||m.data&&m.data.url);" +
 		`if(n){var fn=m.filename||'download';` +
 		`c.innerHTML='<div class="w-full rounded-xl bg-(--card-bg) border border-(--line-divider) p-4 flex flex-col gap-3">` +
 		`<div class="flex items-center gap-2"><span class="text-sm font-semibold truncate min-w-0 flex-1">'+fn+'</span></div>` +
@@ -59,11 +59,11 @@ export function ApiButtonComponent(properties, children) {
 		`document.getElementById('${yid}').addEventListener('click',async function(){` +
 		`var Y=document.getElementById('${yid}'),P=document.getElementById('${pid}'),R=document.getElementById('${rid}'),F=document.getElementById('${fid}');` +
 		`if(Y._d)return;Y._d=true;Y.disabled=true;Y.textContent='准备中...';` +
-		`try{var h=await window.showSaveFilePicker({suggestedName:fn});` +
+		"try{var h=await window.showSaveFilePicker({suggestedName:fn});" +
 		`if(h){P.textContent='正在下载...';fetch(n).then(async function(r){` +
 		`var cl=parseInt(r.headers.get('Content-Length'))||0,re=r.body.getReader(),ws=await h.createWritable();` +
 		`function fmt(nn){var u=['B','KB','MB','GB'],i=0;while(nn>=1024&&i<3){nn/=1024;i++}return nn.toFixed(i>0?1:0)+u[i]}` +
-		`var received=0,_st=Date.now();while(true){var d=await re.read();if(d.done)break;await ws.write(d.value);received+=d.value.length;` +
+		"var received=0,_st=Date.now();while(true){var d=await re.read();if(d.done)break;await ws.write(d.value);received+=d.value.length;" +
 		`if(cl){var pct=Math.round(received/cl*100),_el=(Date.now()-_st)/1000,_sp=_el>0?received/_el:0;F.style.width=pct+'%';P.textContent=fmt(received)+'/'+fmt(cl)+'  '+fmt(_sp)+'/s';R.textContent=pct+'%'}}` +
 		`await ws.close();F.style.width='100%';P.textContent='下载完成';R.textContent='100%'})}}catch(e1){P.textContent='';R.textContent=''}` +
 		`Y.textContent='下载1';Y.disabled=false;Y._d=false})` +

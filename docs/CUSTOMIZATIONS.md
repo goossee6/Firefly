@@ -24,7 +24,7 @@
 | 14 | 壁纸轮播过渡时长可配 | `config/backgroundWallpaper.ts`、`types/backgroundWallpaper.ts`、`utils/banner-visibility-utils.ts`、`WallpaperSection.astro`、`styles/layout-styles.css` | ❌ 上游写死 1000ms |
 | 15 | 搜索索引与页面同层（根路径 → `<产物根>/pagefind/`） | `scripts/run-pagefind.ts`、`scripts/site-root.ts` | ✅ 上游 `url()` 现在可直接用 |
 | 16 | 统计页「最后活动」按自然日计算 | `SiteStats.astro` | ⚠️ 上游直接减毫秒 |
-| 17 | 面包屑/卡片封面组件 `PostCover` | `src/components/misc/PostCover.astro` | ⚠️ 已保留但**未接入** |
+| 17 | ~~面包屑/卡片封面组件 `PostCover`~~ | 已删除（2026-11-05） | — |
 | 18 | 个人配置（站点名/头像/导航/统计/评论/页脚） | 见 §9 | — |
 | 19 | 四平台部署（Workers / Pages / Vercel / GitHub Pages） | `scripts/build-platform.ts`、`.github/workflows/deploy.yml`、`docs/MULTI-PLATFORM.md` | ❌ 无 |
 | 20 | `site_url` 支持 `SITE_URL` 覆盖 | `src/config/siteConfig.ts` | ❌ 上游写死 |
@@ -164,6 +164,10 @@ grep -c Redirecting dist/client/blog/index.html        # 应为 0
 
 > 注意：文章里大量使用 `pinned: 0`，若哪天改回布尔 schema，构建会直接报 `Expected boolean, received number`。
 
+> ⚠️ **数字权重必须转布尔再判断**：`pinned && (...)` 在 `pinned = 0` 时表达式返回 `0` 本身，
+> Astro 会把这个 `0` 当文本渲染出来 —— 表现为文章列表每张卡片的元信息行里多一个孤零零的 `0`（正好在日期前面，
+> 很像「阅读量 0」）。`PostMeta.astro` 现在写成 `Boolean(pinned) && (...)`，新增渲染点时别再漏。
+
 ---
 
 ## 6. 路由扩展
@@ -291,7 +295,7 @@ node scripts/restore-personal-config.mjs --check   # 只检查，CI 可用
 
 | 项 | 状态 | 原因 |
 |---|---|---|
-| `src/components/misc/PostCover.astro`（无封面文章生成随机装饰图） | **保留但未接入** | 上游 6.15+ 重写了 `PostCard` 的无封面布局（改用紧凑的「进入」按钮 + `no-cover` 类），强行接回会破坏新版栅格 |
+| `src/components/misc/PostCover.astro`（无封面文章生成随机装饰图 + 浮动动效） | **已删除** | 上游 6.15+ 重写了 `PostCard` 的无封面布局（改用紧凑的「进入」按钮 + `no-cover` 类），该组件迁移后一直未接入、实际不生效；无封面文章保留箭头图标即可 |
 | 文章 `uid` 字段 / `backfill-uid.ts` | **已放弃** | 自建统计（D1 浏览量）已整体移除，`uid` 无消费方。文章里残留的 `uid:` 会被 zod 自动忽略 |
 | 阴影/网格列相关的 JS 补丁 | **已放弃** | 上游已原生实现 `hideSidebarOnPostPage` 并抽出 `grid-layout-utils.ts`、`sidebar-effective-utils.ts` |
 | `og/[...slug].ts` 的重命名与路径后缀 | **已放弃** | 上游实现完全一致（`params: { slug: \`${slug}.png\` }`） |

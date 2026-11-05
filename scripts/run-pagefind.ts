@@ -23,8 +23,7 @@ const baseSegment = resolveBaseSegment();
 
 // 页面是否被放在 base 子目录里（适配器构建为 true，纯静态构建为 false）
 const pagesUnderBase =
-	baseSegment !== "" &&
-	existsSync(join(siteRoot, baseSegment, "index.html"));
+	baseSegment !== "" && existsSync(join(siteRoot, baseSegment, "index.html"));
 
 const outputSubdir = pagesUnderBase ? `${baseSegment}/pagefind` : "pagefind";
 

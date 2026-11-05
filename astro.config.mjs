@@ -74,7 +74,9 @@ if (process.env.NODE_ENV === "development") {
 const normalizeBase = (value) => {
 	const raw = String(value || "").trim();
 	const withLeading = raw.startsWith("/") ? raw : `/${raw}`;
-	const withTrailing = withLeading.endsWith("/") ? withLeading : `${withLeading}/`;
+	const withTrailing = withLeading.endsWith("/")
+		? withLeading
+		: `${withLeading}/`;
 	return withTrailing.replace(/\/{2,}/g, "/");
 };
 

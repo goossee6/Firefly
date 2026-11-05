@@ -11,22 +11,28 @@
 			"families": [4, 6]
 		},
 		{
-			"name": "github-pages",
-			"label": "GitHub Pages",
-			"url": "https://goossee6.github.io/Firefly/",
-			"enabled": true
-		},
-		{
 			"name": "cf-pages",
 			"label": "Cloudflare Pages",
-			"url": "",
-			"enabled": false
+			"url": "https://blog2.cn3.top/",
+			"enabled": true
 		},
 		{
 			"name": "vercel",
 			"label": "Vercel",
-			"url": "",
-			"enabled": false
+			"url": "https://blog3.cn3.top/",
+			"enabled": true
+		},
+		{
+			"name": "github-pages-customdomain",
+			"label": "GitHub Pages",
+			"url": "https://blog4.cn3.top/",
+			"enabled": true
+		},
+		{
+			"name": "github-pages",
+			"label": "GitHub Pages",
+			"url": "https://goossee6.github.io/Firefly/",
+			"enabled": true
 		}
 	]
 }

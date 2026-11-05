@@ -1,4 +1,10 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,7 +41,11 @@ export function rootRedirect({ title = "Blog" } = {}) {
 				const normalizedDir = fileURLToPath(dir).replace(/[\\/]+$/, "");
 
 				let rootDir = normalizedDir;
-				if (baseSegment && (rootDir.endsWith(`/${baseSegment}`) || rootDir.endsWith(`\\${baseSegment}`))) {
+				if (
+					baseSegment &&
+					(rootDir.endsWith(`/${baseSegment}`) ||
+						rootDir.endsWith(`\\${baseSegment}`))
+				) {
 					rootDir = rootDir.slice(0, -(baseSegment.length + 1)) || rootDir;
 				}
 
@@ -101,13 +111,18 @@ export function rootRedirect({ title = "Blog" } = {}) {
 					const destDir = join(rootDir, entry.name);
 					const dest = join(destDir, "index.html");
 					// 根目录已有同名真实页面时不覆盖
-					if (existsSync(dest) && !readFileSync(dest, "utf-8").includes("Redirecting")) continue;
+					if (
+						existsSync(dest) &&
+						!readFileSync(dest, "utf-8").includes("Redirecting")
+					)
+						continue;
 
 					mkdirSync(destDir, { recursive: true });
 					writeFileSync(dest, content, "utf-8");
 					mirrored++;
 				}
-				if (mirrored > 0) console.log(`✓ Root alias mirror: ${mirrored} 个别名页`);
+				if (mirrored > 0)
+					console.log(`✓ Root alias mirror: ${mirrored} 个别名页`);
 			},
 		},
 	};

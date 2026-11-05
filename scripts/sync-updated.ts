@@ -5,9 +5,10 @@
  * 存到 .sync-hashes.json 中对比。只有正文哈希变了才更新 updated，
  * 纯空格/格式修改被 normalize 后哈希不变，不会触发更新。
  */
+
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { createHash } from "node:crypto";
 import { glob } from "glob";
 
 const POSTS_DIR = path.resolve("src/content/posts");
