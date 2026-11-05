@@ -57,7 +57,7 @@
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `SITE_BASE` | `/` | Astro 的 `base`；GitHub Pages 用 `/Firefly/` |
+| `SITE_BASE` | `/` | Astro 的 `base`；GitHub Pages 未绑自定义域名时用 `/<repo>/` |
 | `SITE_URL` | `https://blog.cn3.top/` | canonical / sitemap / RSS / OG 的绝对域名 |
 | `STATIC_BUILD` | 未设置 | `1` 时关闭适配器，产出纯静态 `dist`（GitHub Pages 用） |
 
@@ -65,7 +65,7 @@
 
 ```bash
 pnpm build                          # 主站形态（/ + 适配器 → dist/client）
-pnpm build:platform github-pages    # GitHub Pages（/Firefly/ + 纯静态 → dist）
+pnpm build:platform github-pages    # GitHub Pages（根路径 + 纯静态 → dist）
 ```
 
 **为什么适配器改成默认启用**

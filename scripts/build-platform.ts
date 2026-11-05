@@ -47,11 +47,13 @@ const PRESETS: Record<string, Preset> = {
 		note: "Vercel（Output Directory 填 dist/client，见 vercel.json）",
 	},
 	"github-pages": {
-		base: "/Firefly/",
-		url: "https://goossee6.github.io/Firefly/",
+		// 已绑自定义域名，站点在域名根。若改用 github.io 项目站点（/<repo>/），
+		// 需覆盖为 SITE_BASE=/Firefly/ SITE_URL=https://<user>.github.io/Firefly/。
+		base: "/",
+		url: "https://blog4.cn3.top/",
 		static: true,
 		output: "dist",
-		note: "GitHub Pages 项目站点（纯静态，输出目录 dist）",
+		note: "GitHub Pages 自定义域名（纯静态，输出目录 dist）",
 	},
 };
 

@@ -19,9 +19,13 @@
 | Cloudflare Workers（主站） | `pnpm build` | `/` | `dist/client` | 启用 |
 | Cloudflare Pages | `pnpm build` | `/` | `dist/client` | 启用 |
 | Vercel | `pnpm build` | `/` | `dist/client` | 启用 |
-| GitHub Pages | `pnpm build:platform github-pages` | `/Firefly/` | `dist` | 关闭 |
+| GitHub Pages | `pnpm build:platform github-pages` | `/` | `dist` | 关闭 |
 
-前三者的产物**完全相同**，一套构建通吃。GitHub Pages 因为不能跑适配器、且站点挂在 `/<repo>/` 下，单独一套。
+前三者的产物**完全相同**，一套构建通吃。GitHub Pages 因为不能跑适配器，单独一套。
+
+四个平台都挂在各自域名的**根路径**。GitHub Pages 若没绑自定义域名（走 `github.io/<repo>/` 项目站点），
+`SITE_BASE` 必须是 `/<repo>/`，否则页面引用的 `/<repo>/_astro/...` 会全部 404 ——
+判断依据只看「站点实际挂在哪个 URL 前缀下」，与用哪个平台无关。
 
 > 站点已从 `https://cn3.top/blog/` 迁到 `https://blog.cn3.top/`：独立子域名 + 根路径。
 > 选根路径而不是 `blog.cn3.top/blog/`，是为了让上游 Firefly 的默认假设成立（`base = "/"`），
@@ -33,11 +37,11 @@
 
 **1. 适配器的产物目录不对**
 
-启用适配器时产物是 `dist/client/...`，站点已在其中按 `base` 组织。GitHub Pages 上传的是整个产物目录，站点根映射到 `/Firefly/`，多出来的 `client/` 层级会让所有路径错位。
+启用适配器时产物是 `dist/client/...`，站点已在其中按 `base` 组织。GitHub Pages 上传的是整个产物目录，多出来的 `client/` 层级会让所有路径错位。
 
 **2. `root-redirect` 钩子会覆盖首页**
 
-钩子的逻辑是「在产物根写一个跳到 `/<base>/` 的页面」。适配器模式下这个行为是对的（产物根 ≠ 站点根）；但 GitHub Pages 的产物根**就是**站点根，写了跳转页就等于把首页换成了「跳到 /Firefly/」，而 `/Firefly/` 正是首页本身 —— 死循环。
+钩子的逻辑是「在产物根写一个跳到 `/<base>/` 的页面」。适配器模式下这个行为是对的（产物根 ≠ 站点根）；但 GitHub Pages 的产物根**就是**站点根，写了跳转页就等于把首页换成了「跳到 /<base>/」，而那个地址正是首页本身 —— 死循环。
 
 钩子里有 `existsSync(<root>/<base>/index.html)` 守卫：纯静态构建时这个目录不存在，于是整体跳过，首页不受影响。所以 GitHub Pages 必须走 `STATIC_BUILD=1`。
 
@@ -50,7 +54,7 @@
 | 纯静态 | `dist/index.html` | `dist/pagefind/` |
 
 `scripts/run-pagefind.ts` 用 `<root>/<base>/index.html` 是否存在来判断页面在哪一层，而不是「有没有配 base」——
-GitHub Pages 的 base 是 `/Firefly/`，但页面在产物根，多加一层反而 404。
+项目站点的 base 是 `/<repo>/`，但页面在产物根，多加一层反而 404。
 
 ## 三、各平台配置
 
@@ -117,10 +121,16 @@ Cloudflare 控制台 → 该域名 → Rules → Redirect Rules，新建：
 仓库侧需要一次性设置：
 
 1. Settings → Pages → Source 选 **GitHub Actions**
-2. 仓库名变了，改 workflow 顶部的 `SITE_BASE` / `SITE_URL`
+2. 仓库改名，或增删自定义域名后，改 workflow 顶部的 `SITE_BASE` / `SITE_URL`
 3. 用自定义域名时：`SITE_BASE` 改成 `/`，`SITE_URL` 改成 `https://你的域名/`，并在 Pages 设置里填 CNAME
 
-访问地址：`https://goossee6.github.io/Firefly/`
+访问地址：`https://blog4.cn3.top/`
+
+> **最常见的 404 原因**：Pages 里绑了自定义域名，但 `SITE_BASE` 还留 `/<repo>/`。
+> 此时 `github.io/<repo>/` 已 301 到自定义域名根，页面里却仍引用 `/<repo>/_astro/...`，
+> 于是所有 CSS / JS / 图片全部 404，首页 HTML 本身却正常。判断方法：
+> `curl -s https://你的域名/ | grep -oE '/[^"]*_astro/[^"]*\.css' | head -1`
+> 输出必须是 `/_astro/...`，不能带任何前缀。
 
 产物自带 `.nojekyll`（构建脚本写入），否则 GitHub Pages 会忽略 `_astro` 目录，样式全丢。
 
@@ -143,10 +153,10 @@ SITE_URL = https://xxx.vercel.app/
 # 主站形态（/、适配器、产物 dist/client）
 pnpm build && pnpm verify
 
-# 子路径形态（/blog/）—— 只在需要临时验证旧布局时用
-SITE_BASE=/blog/ SITE_URL=https://blog.cn3.top/blog/ pnpm build && SITE_BASE=/blog/ pnpm verify
+# 项目站点形态（/Firefly/）—— 只在没绑自定义域名时用
+SITE_BASE=/Firefly/ SITE_URL=https://goossee6.github.io/Firefly/ pnpm build:platform github-pages
 
-# GitHub Pages 形态（/Firefly/、纯静态、产物 dist）
+# GitHub Pages 形态（/、纯静态、产物 dist）
 pnpm build:platform github-pages && STATIC_BUILD=1 pnpm verify
 
 # 只查源码，不构建

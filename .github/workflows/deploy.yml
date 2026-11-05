@@ -16,11 +16,16 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
-# GitHub Pages 是项目站点，挂在 /<repo>/ 下，且不能跑 Cloudflare 适配器。
-# 仓库改名或换自定义域名时，只需要改这里（以及自定义域名场景把 SITE_BASE 改成 /）。
+# GitHub Pages 不能跑 Cloudflare 适配器，构建走 STATIC_BUILD=1 出纯静态 dist。
+#
+# 站点挂载路径取决于 Pages 有没有绑自定义域名：
+#   绑了自定义域名   → 站点在域名根，SITE_BASE = /，SITE_URL = https://<自定义域名>/
+#   没绑，用项目站点 → 站点在 /<repo>/ 下，SITE_BASE = /Firefly/，SITE_URL = https://<user>.github.io/Firefly/
+# 两者不一致时，页面引用的 /<base>/_astro/... 在线上会全部 404。
+# 仓库改名时也要同步改这里。
 env:
-  SITE_BASE: /Firefly/
-  SITE_URL: https://goossee6.github.io/Firefly/
+  SITE_BASE: /
+  SITE_URL: https://blog4.cn3.top/
 
 jobs:
   build:
