@@ -26,22 +26,22 @@ type Preset = {
 
 const PRESETS: Record<string, Preset> = {
 	"cf-workers": {
-		base: "/blog/",
-		url: "https://blog.cn3.top/blog/",
+		base: "/",
+		url: "https://blog.cn3.top/",
 		static: false,
 		output: "dist/client",
 		note: "Cloudflare Workers（wrangler.jsonc: assets = ./dist/client）",
 	},
 	"cf-pages": {
-		base: "/blog/",
-		url: "https://blog.cn3.top/blog/",
+		base: "/",
+		url: "https://blog.cn3.top/",
 		static: false,
 		output: "dist/client",
 		note: "Cloudflare Pages（构建输出目录填 dist/client）",
 	},
 	vercel: {
-		base: "/blog/",
-		url: "https://blog.cn3.top/blog/",
+		base: "/",
+		url: "https://blog.cn3.top/",
 		static: false,
 		output: "dist/client",
 		note: "Vercel（Output Directory 填 dist/client，见 vercel.json）",

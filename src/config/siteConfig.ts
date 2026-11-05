@@ -11,7 +11,7 @@ const SITE_LANG = resolveSiteLang("zh_CN");
 const SITE_URL = (() => {
 	const raw =
 		(typeof process !== "undefined" && process.env.SITE_URL) ||
-		"https://blog.cn3.top/blog/";
+		"https://blog.cn3.top/";
 	return raw.endsWith("/") ? raw : `${raw}/`;
 })();
 

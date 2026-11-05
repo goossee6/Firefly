@@ -64,10 +64,13 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // ── 多平台部署的两个变量 ───────────────────────────────────────────────
-// SITE_BASE  站点挂载路径。默认主站的 /blog/；GitHub Pages 项目站点用 /Firefly/，自定义域名根路径用 /。
+// SITE_BASE  站点挂载路径。默认 /（站点在自己的域名根上）；GitHub Pages 项目站点用 /Firefly/。
 // SITE_URL   绝对站点地址，决定 canonical / sitemap / RSS / OG 图里的域名。
 // 适配器默认启用（dist/client 布局，Vercel 与 Cloudflare Workers 都靠它）；GitHub Pages 这类
 // 不能跑适配器的平台用 STATIC_BUILD=1 出纯静态产物（dist）。
+//
+// 站点已从 cn3.top/blog/ 迁到 blog.cn3.top/（独立子域名 + 根路径）。base 保持 / 的好处是
+// 上游 Firefly 的默认假设成立：资源路径、Pagefind、swup、PWA scope 都不需要额外补丁。
 const normalizeBase = (value) => {
 	const raw = String(value || "").trim();
 	const withLeading = raw.startsWith("/") ? raw : `/${raw}`;
@@ -75,7 +78,7 @@ const normalizeBase = (value) => {
 	return withTrailing.replace(/\/{2,}/g, "/");
 };
 
-const siteBase = normalizeBase(process.env.SITE_BASE || "/blog/");
+const siteBase = normalizeBase(process.env.SITE_BASE || "/");
 const siteUrl = (() => {
 	const raw = (process.env.SITE_URL || siteConfig.site_url || "").trim();
 	return raw.endsWith("/") ? raw : `${raw}/`;

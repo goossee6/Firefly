@@ -225,7 +225,7 @@ export default function rootRedirect() {
 ```json
 // config.local.json
 {
-  "siteConfig": { "title": "CC 的 Blog", "subtitle": "嘻嘻", "site_url": "https://blog.cn3.top/blog/" },
+  "siteConfig": { "title": "CC 的 Blog", "subtitle": "嘻嘻", "site_url": "https://blog.cn3.top/" },
   "profileConfig": { "avatar": "/assets/images/doro01.avif", "name": "CC", "bio": "嘻嘻." },
   "analyticsConfig": { "websiteId": "117d7413-…", "scriptUrl": "https://u.cn3.top/script.js" },
   "commentConfig": { "envId": "https://twikoo.vercel.app", "visitorCount": true },

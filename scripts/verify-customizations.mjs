@@ -78,9 +78,9 @@ console.log(`${BOLD}定制项自检${RESET} ${DIM}(base=${baseSegment ? `/${base
 section("源码");
 
 check(
-	"astro.config 声明 base 子路径",
-	() => baseSegment.length > 0,
-	`astro.config.mjs 的 base 解析为空（SITE_BASE 未生效），站点会部署到根路径`,
+	"astro.config 的 base 由 SITE_BASE 驱动",
+	() => /process\.env\.SITE_BASE\s*\|\|/.test(configSource),
+	"base 写死会让多平台 / 换域名失去唯一开关",
 );
 
 check(
@@ -146,11 +146,11 @@ check(
 );
 
 check(
-	"pagefind 索引输出到 base 子目录",
+	"pagefind 索引输出位置跟随页面层",
 	() =>
 		read("scripts/run-pagefind.ts").includes("--output-subdir") &&
 		read("scripts/site-root.ts").includes("resolveBaseSegment"),
-	"scripts/run-pagefind.ts：少了 --output-subdir，浏览器会请求 /blog/pagefind/pagefind.js 而 404",
+	"scripts/run-pagefind.ts：索引必须和页面同层，否则浏览器请求 /pagefind/pagefind.js 会 404",
 );
 
 check(
@@ -269,8 +269,9 @@ if (SOURCE_ONLY) {
 		"首页被写成了跳转页 —— root-redirect 的路径计算又错了",
 	);
 
-	// 纯静态构建（GitHub Pages）时产物根就是站点根，根跳转页与别名镜像都不该生成
-	if (!staticBuild) {
+	// 纯静态构建（GitHub Pages）或 base 为空（独立域名根路径）时，产物根就是站点根，
+	// 不需要根跳转页，也不存在要镜像到根层的别名页
+	if (!staticBuild && baseSegment) {
 		check(
 			`根跳转页指向 /${baseSegment}/`,
 			() => read(`${siteRoot}/index.html`).includes(`url=/${baseSegment}/`),
@@ -295,14 +296,14 @@ if (SOURCE_ONLY) {
 	}
 
 	check(
-		staticBuild ? "pagefind 索引位于产物根（纯静态构建）" : "pagefind 索引位于 base 子目录",
+		`pagefind 索引位于页面层（${siteDir}/pagefind）`,
 		() =>
-			staticBuild
-				? exists(`${siteRoot}/pagefind/pagefind.js`)
-				: exists(`${siteDir}/pagefind/pagefind.js`) && !exists(`${siteRoot}/pagefind/pagefind.js`),
-		staticBuild
-			? `索引应在 ${siteRoot}/pagefind（页面就在产物根，不能再加 base 层）`
-			: `索引应在 ${siteDir}/pagefind，且旧位置不应残留`,
+			exists(`${siteDir}/pagefind/pagefind.js`) &&
+			// 站点挂载在子路径时，产物根不该再留一份旧索引
+			(siteDir === siteRoot || !exists(`${siteRoot}/pagefind/pagefind.js`)),
+		siteDir === siteRoot
+			? `索引应在 ${siteDir}/pagefind`
+			: `索引应在 ${siteDir}/pagefind，且产物根的旧位置不应残留`,
 	);
 
 	check(

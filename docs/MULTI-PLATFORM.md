@@ -6,8 +6,8 @@
 
 | 变量 | 含义 | 默认值 |
 |---|---|---|
-| `SITE_BASE` | 站点挂载路径，Astro 的 `base` | `/blog/` |
-| `SITE_URL` | 绝对站点地址，决定 canonical / sitemap / RSS / OG 里的域名 | `https://blog.cn3.top/blog/` |
+| `SITE_BASE` | 站点挂载路径，Astro 的 `base` | `/`（独立域名根路径） |
+| `SITE_URL` | 绝对站点地址，决定 canonical / sitemap / RSS / OG 里的域名 | `https://blog.cn3.top/` |
 | `STATIC_BUILD` | 设为 `1` 时关闭 Cloudflare 适配器，产出纯静态 `dist` | 未设置（适配器启用） |
 
 ---
@@ -16,12 +16,16 @@
 
 | 平台 | 构建命令 | SITE_BASE | 产物目录 | 适配器 |
 |---|---|---|---|---|
-| Cloudflare Workers（主站） | `pnpm build` | `/blog/` | `dist/client` | 启用 |
-| Cloudflare Pages | `pnpm build` | `/blog/` | `dist/client` | 启用 |
-| Vercel | `pnpm build` | `/blog/` | `dist/client` | 启用 |
+| Cloudflare Workers（主站） | `pnpm build` | `/` | `dist/client` | 启用 |
+| Cloudflare Pages | `pnpm build` | `/` | `dist/client` | 启用 |
+| Vercel | `pnpm build` | `/` | `dist/client` | 启用 |
 | GitHub Pages | `pnpm build:platform github-pages` | `/Firefly/` | `dist` | 关闭 |
 
 前三者的产物**完全相同**，一套构建通吃。GitHub Pages 因为不能跑适配器、且站点挂在 `/<repo>/` 下，单独一套。
+
+> 站点已从 `https://cn3.top/blog/` 迁到 `https://blog.cn3.top/`：独立子域名 + 根路径。
+> 选根路径而不是 `blog.cn3.top/blog/`，是为了让上游 Firefly 的默认假设成立（`base = "/"`），
+> 资源路径、Pagefind、swup、PWA scope 都不需要额外补丁，后续同步上游时这块不再产生冲突。
 
 ## 二、为什么 GitHub Pages 必须单独构建
 
@@ -29,7 +33,7 @@
 
 **1. 适配器的产物目录不对**
 
-启用适配器时产物是 `dist/client/blog/...`。GitHub Pages 上传的是整个产物目录，站点根映射到 `/Firefly/`，多出来的 `client/` 层级会让所有路径错位。
+启用适配器时产物是 `dist/client/...`，站点已在其中按 `base` 组织。GitHub Pages 上传的是整个产物目录，站点根映射到 `/Firefly/`，多出来的 `client/` 层级会让所有路径错位。
 
 **2. `root-redirect` 钩子会覆盖首页**
 
@@ -41,7 +45,8 @@
 
 | 构建方式 | 页面位置 | 索引位置 |
 |---|---|---|
-| 适配器 | `dist/client/blog/index.html` | `dist/client/blog/pagefind/` |
+| 适配器 + `base = "/"` | `dist/client/index.html` | `dist/client/pagefind/` |
+| 适配器 + `base = "/blog/"` | `dist/client/blog/index.html` | `dist/client/blog/pagefind/` |
 | 纯静态 | `dist/index.html` | `dist/pagefind/` |
 
 `scripts/run-pagefind.ts` 用 `<root>/<base>/index.html` 是否存在来判断页面在哪一层，而不是「有没有配 base」——
@@ -61,6 +66,29 @@ GitHub Pages 的 base 是 `/Firefly/`，但页面在产物根，多加一层反�
 
 `assets.directory` 指向 `./dist/client`。
 
+**自定义域名（当前：`blog.cn3.top`）**
+
+在 Workers 项目 → Settings → Domains & Routes 添加 `blog.cn3.top`。因为 `base = "/"`，
+域名根路径就是首页，不需要任何子路径前缀，也不需要 `root-redirect` 生成跳转页（钩子会自动跳过）。
+
+### 旧地址 `cn3.top/blog/*` 的 301
+
+站点换域名后，旧链接（外链、搜索引擎收录）仍指向 `cn3.top/blog/xxx/`。推荐在**主域 cn3.top 那侧**做整段跳转，而不是在新站里兼容：
+
+Cloudflare 控制台 → 该域名 → Rules → Redirect Rules，新建：
+
+| 项 | 值 |
+|---|---|
+| When incoming requests match | `URI Path` `starts with` `/blog/` |
+| Then | Type = **Dynamic**，Expression = `concat("https://blog.cn3.top", substring(http.request.uri.path, 5))` |
+| Status code | `301` |
+
+`substring(path, 5)` 去掉开头的 `/blog`，于是 `/blog/post/foo/` → `https://blog.cn3.top/post/foo/`。
+用 301 而不是 302，搜索引擎才会把权重迁到新域名。
+
+> 检查点：现在 `cn3.top/blog/` 返回 302 且跳转目标还带 `/blog/`，会落到新站的 404。
+> 改成上面这条规则后，`cn3.top/blog/xxx` 应一跳直达 `blog.cn3.top/xxx`。
+
 ### Cloudflare Pages
 
 | 项 | 值 |
@@ -68,9 +96,9 @@ GitHub Pages 的 base 是 `/Firefly/`，但页面在产物根，多加一层反�
 | Framework preset | None |
 | Build command | `pnpm build` |
 | Build output directory | `dist/client` |
-| 环境变量 | `SITE_URL` = `https://<项目名>.pages.dev/blog/`（可选，见下） |
+| 环境变量 | `SITE_URL` = `https://<项目名>.pages.dev/`（可选，见下） |
 
-部署后根路径 `/` 会 302 到 `/blog/`，站点实际入口是 `https://<项目名>.pages.dev/blog/`。
+部署后站点入口就是 `https://<项目名>.pages.dev/`。
 
 ### Vercel
 
@@ -80,7 +108,7 @@ GitHub Pages 的 base 是 `/Firefly/`，但页面在产物根，多加一层反�
 |---|---|
 | Framework Preset | Other（**不要选 Astro**，预设会接管输出目录） |
 | Output Directory | `dist/client` |
-| 环境变量 | `SITE_URL` = `https://<项目名>.vercel.app/blog/`（可选） |
+| 环境变量 | `SITE_URL` = `https://<项目名>.vercel.app/`（可选） |
 
 ### GitHub Pages
 
@@ -100,11 +128,11 @@ GitHub Pages 的 base 是 `/Firefly/`，但页面在产物根，多加一层反�
 
 你选择了「各平台用自己的域名」，所以不同平台构建时 canonical / sitemap 应当指向自己的地址。
 
-`SITE_URL` 没设时回落到主站 `https://blog.cn3.top/blog/`。如果 Cloudflare Pages / Vercel 上也想让搜索引擎认它们的域名，在平台控制台加环境变量即可：
+`SITE_URL` 没设时回落到主站 `https://blog.cn3.top/`。如果 Cloudflare Pages / Vercel 上也想让搜索引擎认它们的域名，在平台控制台加环境变量即可：
 
 ```
-SITE_URL = https://xxx.pages.dev/blog/
-SITE_URL = https://xxx.vercel.app/blog/
+SITE_URL = https://xxx.pages.dev/
+SITE_URL = https://xxx.vercel.app/
 ```
 
 > 注意：多个域名提供同样的内容，搜索引擎可能判定重复。即便各平台用自己的 canonical，主站之外的建议加 `X-Robots-Tag: noindex` 或 `robots.txt` 屏蔽，只留一个被索引的入口。
@@ -112,8 +140,11 @@ SITE_URL = https://xxx.vercel.app/blog/
 ## 五、本地验证
 
 ```bash
-# 主站形态（/blog/、适配器、产物 dist/client）
+# 主站形态（/、适配器、产物 dist/client）
 pnpm build && pnpm verify
+
+# 子路径形态（/blog/）—— 只在需要临时验证旧布局时用
+SITE_BASE=/blog/ SITE_URL=https://blog.cn3.top/blog/ pnpm build && SITE_BASE=/blog/ pnpm verify
 
 # GitHub Pages 形态（/Firefly/、纯静态、产物 dist）
 pnpm build:platform github-pages && STATIC_BUILD=1 pnpm verify
@@ -122,14 +153,20 @@ pnpm build:platform github-pages && STATIC_BUILD=1 pnpm verify
 pnpm verify:source
 ```
 
-`pnpm verify` 会按当前构建形态自动切换断言：适配器模式检查根跳转页与别名镜像，
-纯静态模式检查首页未被覆盖、索引在产物根。
+> **Windows Git Bash 注意**：`SITE_BASE=/blog/` 作为命令前缀会被 MSYS 当成 POSIX 路径，转换成
+> `E:/Program Files/Git/blog` 之类，构建会报 `mkdir 'dist\client\E:\...\blog\_astro\fonts'` 这种荒唐路径。
+> 前面加 `MSYS_NO_PATHCONV=1`，或直接用 `pnpm build:platform cf-workers`（脚本内传 env，不经过 shell 转换）。
+> PowerShell / Linux CI 没有这个问题。
+
+`pnpm verify` 会按当前构建形态自动切换断言：`base` 非空时检查根跳转页与别名镜像，
+`base = "/"` 或纯静态时只检查首页与索引层级。
 
 ## 六、常见故障
 
 | 现象 | 原因 |
 |---|---|
 | `assets.directory ... does not exist` | 适配器没启用（`STATIC_BUILD` 被误设，或误改回 `CF_WORKERS` 条件加载） |
+| 首页能开，但 CSS/JS/图片全 404 | 页面在域名根、资源却引用 `/<base>/_astro/...`。要么 `base` 与部署位置不一致，要么 `assets.directory` 指到了 `dist/client/blog` 这类子目录 —— 后者会让 `/` 出首页、`/blog/*` 全 404，正是把 `blog.cn3.top` 指到子目录时踩的坑 |
 | 整站 404、链接都带 `/blog/` 但文件在根 | 用了纯静态构建却按子路径部署，或反之 |
 | GitHub Pages 样式全丢 | 缺 `.nojekyll`，`_astro` 被 Jekyll 忽略 |
 | GitHub Pages 打开是「正在跳转」 | 误用适配器构建，`root-redirect` 覆盖了首页 |

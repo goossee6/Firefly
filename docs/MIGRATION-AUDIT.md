@@ -61,7 +61,7 @@ upstream/master : af8e98fd  fix(utils): 统一全站日期格式化与归档分�
 
 | 文件 | 当前值 |
 |---|---|
-| `siteConfig.ts` | 标题「CC 的 Blog」/ 副标题「嘻嘻」/ `site_url: https://blog.cn3.top/blog/` |
+| `siteConfig.ts` | 标题「CC 的 Blog」/ 副标题「嘻嘻」/ `site_url: https://blog.cn3.top/`（迁移时为 `/blog/` 子路径，现已改根路径） |
 | `profileConfig.ts` | `avatar: /assets/images/doro01.avif`、名字 CC、bio「嘻嘻.」 |
 | `navBarConfig.ts` | 「工具」一级菜单、`/game/` 入口、bilibili/bangumi/myanimelist 页（**无失效的 `/anime/`**） |
 | `analyticsConfig.ts` | Umami `117d7413-…`、`https://u.cn3.top/script.js` |
@@ -139,12 +139,14 @@ upstream/master : af8e98fd  fix(utils): 统一全站日期格式化与归档分�
 ### ① `site_url` 已被你改过，文档需同步
 
 ```diff
-- site_url: "https://cn3.top/blog/"      ← docs/CUSTOMIZATIONS.md 里记的还是这个
-+ site_url: "https://blog.cn3.top/blog/" ← 当前实际值
+- site_url: "https://cn3.top/blog/"       ← 最初的记录
+- site_url: "https://blog.cn3.top/blog/"  ← 迁到子域名、但仍是子路径时
++ site_url: "https://blog.cn3.top/"       ← 当前值（子域名 + 根路径）
 ```
 
-`docs/CUSTOMIZATIONS.md` §9 需要更新为 `blog.cn3.top`。
-**这个值决定 sitemap、RSS、OG 图、canonical 里的绝对域名**，必须与实际部署域名一致。
+`docs/CUSTOMIZATIONS.md` §9 已同步为 `blog.cn3.top/`。
+**这个值决定 sitemap、RSS、OG 图、canonical 里的绝对域名**，必须与实际部署域名一致；
+改域名时连同 `astro.config.mjs` 的 `SITE_BASE` / `SITE_URL` 一起改，见 `docs/MULTI-PLATFORM.md`。
 
 ### ② 有 4 处配置在核对期间被改回了上游默认值
 
